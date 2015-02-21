@@ -1,0 +1,40 @@
+Sake (with SSC)
+---------------
+Will probably run any any post Java 7. Theres nothing special, and no dependancies, unless testing (Scalatest) 
+
+
+
+Tools
+-----
+Two tools,
+
+- sake  A half-developed but usable tasking/Make tool
+- ssc   The scala documenter
+
+
+
+Compiling
+---------
+Both tools are compiled in the same way. The instructions should be in a text file with this file, called INSTALL.
+
+
+Installation
+------------
+The bin contains a script for running Sake and ssc. This needs to be pointed at Scala and Sake jars.
+
+
+Release
+-------
+The Sake jar should be in /lib, where it will be placed by following the instructions in README and running the included script. 
+
+Scala .jar paths may need to be set, depends on how fully Scala is installed on the host system.
+
+If you use the code for any time, add the full path of the `bin` directory to the `PATH` environment variable.
+
+ssc -help
+
+sake -help
+
+should show a lot, as will scaladoc.
+
+

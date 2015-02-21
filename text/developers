@@ -1,0 +1,37 @@
+This README is intended for developers of the packages. It explains how to assemble the build-tool free distribution.
+
+To see README details on the code, go to the /sake or /ssc folders.
+
+
+
+== Assembling the Build
+No build tools. Hurrah!
+
+To generate a scalacArgs file, use,
+
+find src/main -regex ".+\.scala"
+
+or similar. Cut and copy the list. Add to the top the compile line,
+
+-d . -verbose -toolcp Lib/scalatest_2.11-3.0.0-SNAP2 -optimise
+
+Add to the end the sake we need compiling,
+
+./PackageSake.sake
+
+Bingo. Test with,
+
+scalac @scalacArgs
+
+Run the installation task with,
+
+scala -verbose -toolcp sake -Dsake.runner.home= sake.PackageSake installable
+
+
+
+== Testing installed versions
+The installed scripts can be pointed at ongoing compiles e.g. the script pointed at a Scala and the target compiled .jar e.g.
+
+SCALA_JAR="/home/rob/Deployed/scala-2.11.4/lib/scala-library.jar"
+SSC_JAR="/home/rob/Code/trowel/target/scala-2.11/ssc_2.11-0.1.0-SNAPSHOT.jar"
+

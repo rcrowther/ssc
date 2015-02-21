@@ -1,0 +1,82 @@
+I'm beginning to want before() after() and init(), and final(). Maybe.
+
+Need a rename file, at least. Or move/rename.
+
+And go off returns. After all that trouble.
+
+
+That package collision could be fixed by parsing files. If the overhead is acceptable. But I don't think it is?
+
+
+Must get versioning in there. Must.
+
+Should maybe print warnings about overgrown cache?
+
+
+
+Option renaming? And ordering?
+
+Gather tests into suites.
+
+Maybe some system background too.
+
+Proper named exception.
+
+Enviroment var types, somehow.
+
+fsc option. Ha ha.
+
+Rebuild OS script.
+
+Versioning.
+
+Not getting message when calling cause?
+
+Deprecate Route?!
+
+Stubtasks not working, something to do with invoked rejecting?
+
+How much memory do we really need for a Sake? Should we trim Scala settings?
+
+== DONE
+Full compile from commandline. Jolly good.
+Added the shell shCatch methods to noThrow
+File classes get 'move' methods.
+EmptyTask renamed to StubTask, because it's not an EmptyTask.
+File util namespaced into sake.util.file.
+Protection against non-existant route naming.
+Sakes can be packaged (though it is no real protection).
+File classes get 'copy' methods.
+Bug fixes through the file classes
+File helper implicits tidier in package
+File helpers abstracted. Makes them more consistent, and they've gained a depth parameter.
+Removed EnvdataMap
+Rebuilt help building to be more flexible.
+Now finding ".sake" files.
+RunnerSake classes built.
+Parser helpers extended with more flexible parameters.
+Runner built
+PathOps classes
+Parser helpers
+Lots of work on the new runner
+FileTimeOps class
+Returns reduced from map of options Option to map of Unit/Any
+Returns has several passing parameters missing
+Cleaned options-by-parameter passing
+Removed need var from tasks
+Added non-invokechain error methods
+More structured output
+More colorful output
+Support Dir methods downgraded to return Traversables
+Support traversable classes extended with companion object templates.
+New options print descriptions too.
+New options for --tasks and --where printout
+*vokes now have common catch for options
+Fix invokes for multiple task targets
+Enabled per-task multi-tasking
+Enabled multitask option
+Fixed separator.
+Clean up backtraces (made a start)
+Added optionless and debug *vokes
+Now does routes -> names by a method.
+Java exception causes get display.

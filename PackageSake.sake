@@ -1,0 +1,134 @@
+package sake
+
+import sake.support.parser.{CLSwitchOption, CLArgOption}
+import sake.util.file._
+import sake.util.executable.Java
+
+/** Collect and package sake files and compiled code.
+  *
+  * The source must be raw compiled, or a working version of `sake`
+  * available.  Then this class can be used to gather together and
+  * .jar source code, in various ways.
+  */
+//TODO: Throws errors if repeated.
+object PackageSake
+    extends RunnerSakeMultiRun
+    with sake.util.noThrow.Shell
+{
+  /** Set version here
+    * With no build tools, version needs to be located someplace.
+    */
+  val version = "6.0"
+
+  protected val customArgs = Map[String, CLArgOption](
+    "jar" -> "produce a jar",
+    "makeLibraryJar" -> "produce a jar",
+    "installable" -> "produce a /bin folder and contents suitable for installing",
+    "clean" -> "remove packaging products"
+  )
+
+  protected val customSwitches = Map[String, CLSwitchOption](
+  )
+
+  override protected val appName = "packagesake"
+  override val defaultTaskRoute = "show"
+
+  val srcPathSake = cwd.resolve("src/sake")
+  val srcPathSSC = cwd.resolve("src/ssc")
+  val buildPath = cwd.resolve("build")
+  val buildPath2 = cwd.resolve("build2")
+  //////////////////////////////////
+
+  def cleanJarTemps() {
+    Dir.delete(buildPath)
+  }
+
+
+  task("makeLibraryJar") {
+    traceInfo("makeLibraryJar...")
+
+    // Write the manifest file
+    val manifestData = Seq(
+      "Manifest-Version: 1.0",
+      "Implementation-Version: " + version,
+      "Specification-Title: Sake",
+      "Specification-Version: " + version
+    )
+
+    //Dir.create(buildPath)
+
+ Java.libraryJar(
+    cwd,
+    "sake.jar",
+    manifestData,
+    buildPath,
+    false
+  )
+  }
+
+  task("installable", after("makeLibraryJar")) {
+
+    val rootFolderName = "sake-" + version
+    val binPath = cwd.resolve(rootFolderName + "/bin")
+    val libPath = cwd.resolve(rootFolderName + "/lib")
+    val docPath = cwd.resolve(rootFolderName + "/doc")
+
+    // Create the folder structure
+    Dir.create(cwd.resolve(rootFolderName))
+    Dir.create(binPath)
+    Dir.create(cwd.resolve(rootFolderName + "/bin/tmp"))
+    Dir.create(libPath)
+    Dir.create(docPath)
+
+    // Copy in the scripted runner files
+    Entry.copy(
+      srcPathSake.resolve("tools/sake"),
+      binPath
+    )
+
+    Entry.copy(
+      srcPathSSC.resolve("tools/ssc"),
+      binPath
+    )
+
+    // Copy in the base texts
+    Entry.copy(
+      srcPathSake.resolve("text/sake.txt"),
+      docPath
+    )
+
+    Entry.copy(
+      srcPathSSC.resolve("text/ssc.txt"),
+      docPath
+    )
+
+    // ...and the general texts
+    Entry.copy(
+      cwd.resolve("text/INSTALL"),
+      docPath
+    )
+
+    Entry.copy(
+      cwd.resolve("text/README"),
+      docPath
+    )
+
+    // ...and the sake jar into the library
+    Entry.move(
+      cwd.resolve("sake.jar"),
+      libPath
+    )
+
+  }
+
+
+
+  task("clean") {
+    // Remove installable packaging
+    val rootFolderName = "sake-" + version
+    Dir.delete(cwd.resolve(rootFolderName))
+    // Remove jar packaging
+    Entry.delete(cwd.resolve("sake.jar"))
+  }
+
+}//PackageSake
