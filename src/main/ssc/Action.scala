@@ -43,16 +43,27 @@ class Action(
   // Utils //
   ///////////
 
-  private def scalaSrcPath : Path = dirFind("scalaSrcDir", config.asSeq("scalaSrcDir"))
+  private def scalaSrcPath : Option[Path] = dirFind("scalaSrcDir", config.asSeq("scalaSrcDir"))
   private def buildPath : Path = cwd.resolve(config("buildDir"))
   private def docPath : Path = cwd.resolve(config("docDir"))
-  private def libPath : Path = dirFind("libDir", config.asSeq("libDir"))
+  private def libPath : Option[Path] = dirFind("libDir", config.asSeq("libDir"))
 
   private def dirEntryPaths(path: Path, filter: String)
       : Traversable[Path] =
   {
     val paths = Dir.readEntry(path)
     paths.filter{p =>p.getFileName().toString.endsWith(filter)}
+  }
+
+  /**
+    * This takes an optional path, and returns an empty traversable
+    * @return entries found in the dir
+    */
+  private def dirEntryPaths(path: Option[Path], filter: String)
+      : Traversable[Path] =
+  {
+    if (path != None) dirEntryPaths(path.get, filter)
+    else Seq.empty[Path]
   }
 
   private def dirEntryPathsAndAttributes(path: Path, filter: String)
@@ -67,7 +78,9 @@ class Action(
     */ 
   // TODO: This seems to pick up stuff scalac doesn't compile, e.g.
   // orphans and configs. Bothered?
-  private def incrementalSrcs()
+  private def incrementalSrcs(
+    srcPath: Path
+)
       : Traversable[String] =
   {
     traceInfo("using incremental compile")
@@ -88,7 +101,7 @@ class Action(
     val allCompiledPathsMap : Map[String, java.nio.file.attribute.FileTime]  = b.result()
     //println(s"allCompiledPathsMap: $allCompiledPathsMap")
     //println
-    val allSrcPaths = dirEntryPathsAndAttributes(scalaSrcPath, ".scala")
+    val allSrcPaths = dirEntryPathsAndAttributes(srcPath, ".scala")
 
     allSrcPaths.filter{ pa =>
       // Convert "path/X.scala" to "path/X.class"
@@ -129,19 +142,20 @@ class Action(
   }
   
   private def dirFind(requester: String, pathStrs: Seq[String])
-      : Path =
+      : Option[Path] =
   {
     val pathO = pathStrs.find{ pathStr =>
       Dir.exists(pathStr.toPath)
     }
     if (pathO == None){
-      val ps = pathStrs.mkString("\n")
-      throw new RuntimeException(s"$requester could not find an existing directory in the sequence:\n$ps")
+      val ps = pathStrs.mkString(", ")
+      traceInfo(s"$requester could not find an existing directory in the sequence: $ps")
+      None
     }
     else {
       val pathStr = pathO.get
       traceInfo(s"$requester is $pathStr")
-      pathStr.toPath
+      Some(pathStr.toPath)
     }
   }
 
@@ -228,6 +242,7 @@ class Action(
     * @return true if options were added, else false.
     */
   private def buildScalaSrcOptions(
+    srcPath: Path,
     b: scala.collection.mutable.Builder[String, Seq[String]],
     incrementalCompile : Boolean
   )
@@ -240,7 +255,7 @@ class Action(
     // TODO: Make non-recent, or complete...
     val targetSrcPaths =
       if (incrementalCompile) {
-        incrementalSrcs()
+        incrementalSrcs(srcPath)
       }
       else  allSrcPaths
     
@@ -330,18 +345,105 @@ class Action(
     b
   }
 
+
+  ///////////////////
+  // Inner Compile //
+  ///////////////////
+
+  /** Compiles source files to the buildDir.
+    *
+    * This is the raw action, and should be protected against missing sources, etc.
+    *
+    * @return true if a compile succeeded, else false.
+    */
+  def doCompile()
+  : Boolean =
+  {
+
+    // Erase the build directory, if not incrementally compiling
+    // TODO: Necessary, if files are provided? Oh well.
+    if(!config.asBoolean("incremental") && dirIsPopulated(buildPath, ".class")) {
+      Dir.delete(buildPath)
+    }
+
+    // Assert a build directory exists
+    Dir.create(buildPath)
+
+
+    // Build some compile options
+    val b = buildScalaStandardOptions(
+      "scalac",
+      cwd.resolve(config("buildDir")),
+      true
+    )
+
+    appendCompileOptions(b)
+    //println("scalac line:" + b.result())
+
+    // Maybe incremental compile, maybe full
+    val needsCompiling = buildScalaSrcOptions(
+      scalaSrcPath.get,
+      b,
+      config.asBoolean("incremental")
+    )
+
+
+    if(!needsCompiling) {
+      traceInfo("No files need to be compiled")
+      true
+    }
+    else {
+
+      val pb = new ProgressNotifier(
+        traceInfoPrint _,
+        verbose,
+        config.asBoolean("disableProgress"),
+        "compiling",
+        10
+      )
+
+
+      //TODO: No-throw needs error catching
+      shCatch (b.result()) match {
+        case Left(x) => {
+          pb.stop()
+          println(x)
+          traceWarning("compilation errors")
+          false
+        }
+        case Right(x) => {
+          pb.stop()
+          println(x._1)
+          println(x._2)
+          traceInfo("done")
+          true
+        }
+      }
+
+    }
+  }
+
   ////////////////
   // Control //
   ////////////////
 
   def assertCompile(requester: String)
+      : Boolean =
   {
     if(dirIsPopulated(buildPath, ".class")) {
       traceInfo(s"$requester is working from classes in ${buildPath.toString}")
+      true
     }
     else {
-      traceInfo(s"$requester has no classes to work from, is forcing compile...")
-      compile()
+      if (scalaSrcPath == None) {
+        val configPaths = config.asSeq("scalaSrcDir").mkString(", ")
+        traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: ${configPaths}")
+        false
+      }
+      else {
+        traceInfo(s"$requester has no classes to work from, is forcing compile...")
+        doCompile()
+      }
     }
   }
 
@@ -353,66 +455,50 @@ class Action(
   /** Produces documentation in docDir.
     */
   def doc() {
+    if (scalaSrcPath == None) {
+      val configPaths = config.asSeq("scalaSrcDir").mkString(", ")
+      traceWarning(s"A 'doc' task has been requested, but no source directories can be found in the configuration options: ${configPaths}")
+    }
+    else {
 
-    Dir.create(docPath)
+      Dir.create(docPath)
 
-    //val b =
-/*
-      if (config.asBoolean("strict")) {
-        // Strict documenting from classes.
-        assertCompile("-strict switch for 'doc'")
+      val b = buildScalaStandardOptions(
+        "scaladoc",
+        cwd.resolve(config("docDir")),
+        false
+      )
 
-        // Ok, should have classfiles
-        val b = buildScalaStandardOptions(
-          "scaladoc",
-          cwd.resolve(config("docDir")),
-          true
-        )
+      appendDocOptions(b)
 
-        appendDocOptions(b)
-        // No need for source files, using classpaths.
-println(s"strict: ${b.result()}")
-        b
-      }
-      else {
-*/
-        //traceInfo(s"'soft' documentation is working from src files in ${scalaSrcPath.toString}")
-        // Soft documenting from source files
-        val b = buildScalaStandardOptions(
-          "scaladoc",
-          cwd.resolve(config("docDir")),
-          false
-        )
+      // Add paths for source files all sources
+      buildScalaSrcOptions(
+        scalaSrcPath.get,
+        b,
+        false
+      )
 
-        appendDocOptions(b)
 
-        // Add paths for source files all sources
-        buildScalaSrcOptions(
-          b,
-          false
-        )
-       // b
-      //}
+      val pb = new ProgressNotifier(
+        traceInfoPrint _,
+        verbose,
+        config.asBoolean("disableProgress"),
+        "documenting",
+        10
+      )
 
-    val pb = new ProgressNotifier(
-      traceInfoPrint _,
-      verbose,
-      config.asBoolean("disableProgress"),
-      "documenting",
-      10
-    )
-
-    shCatch (b.result()) match {
-      case Left(x) => {
-        pb.stop()
-        println(x)
-        traceWarning("compilation errors")
-      }
-      case Right(x) => {
-        pb.stop()
-        println(x._1)
-        println(x._2)
-        traceInfo("done")
+      shCatch (b.result()) match {
+        case Left(x) => {
+          pb.stop()
+          println(x)
+          traceWarning("compilation errors")
+        }
+        case Right(x) => {
+          pb.stop()
+          println(x._1)
+          println(x._2)
+          traceInfo("done")
+        }
       }
     }
   }
@@ -443,174 +529,127 @@ println(s"strict: ${b.result()}")
   }
 
 
-  /** Compiles source files to the buildDir.
+  /** Produces compiled classes.
     */
   def compile() {
-    // Handle the build dir
-    // TODO: Necessary, if files are provided? Oh well.
-    if(!config.asBoolean("incremental") && dirIsPopulated(buildPath, ".class")) {
-      Dir.delete(buildPath)
-    }
-
-    // Assert a build directory exists
-    Dir.create(buildPath)
-
-
-    // Build some compile options
-    val b = buildScalaStandardOptions(
-      "scalac",
-      cwd.resolve(config("buildDir")),
-      true
-    )
-
-    appendCompileOptions(b)
-    //println("scalac line:" + b.result())
-
-    // Maybe incremental compile, maybe full
-    val needsCompiling = buildScalaSrcOptions(
-      b,
-      config.asBoolean("incremental")
-    )
-
-
-    if(!needsCompiling) {
-      traceInfo("No files need to be compiled")
+    if (scalaSrcPath == None) {
+      val configPaths = config.asSeq("scalaSrcDir").mkString(", ")
+      traceWarning(s"A 'compile' task has been requested, but no source directories can be found in the configuration options: ${configPaths}")
     }
     else {
-
-      val pb = new ProgressNotifier(
-        traceInfoPrint _,
-        verbose,
-        config.asBoolean("disableProgress"),
-        "compiling",
-        10
-      )
-
-
-      //TODO: No-throw needs error catching
-      shCatch (b.result()) match {
-        case Left(x) => {
-          pb.stop()
-          println(x)
-          traceWarning("compilation errors")
-        }
-        case Right(x) => {
-          pb.stop()
-        println(x._1)
-        println(x._2)
-          traceInfo("done")
-        }
-      }
-
+      doCompile()
     }
   }
+
 
   /** Produces a library jar file.
     */
   def jar()
   {
     // ensure compiled classes exist
-    assertCompile("'jar' request")
+    if(assertCompile("'jar' request")) {
 
+      // Create a manifest file
+      val b = Seq.newBuilder[String]
 
-    // Create a manifest file
-    val b = Seq.newBuilder[String]
+      b += "Manifest-Version: 1.0"
+      b += "Implementation-Version: " + config("appVersion")
+      b += "Specification-Title: " + config("appName")
+      b += "Specification-Version: " + config("appVersion")
 
-    b += "Manifest-Version: 1.0"
-    b += "Implementation-Version: " + config("appVersion")
-    b += "Specification-Title: " + config("appName")
-    b += "Specification-Version: " + config("appVersion")
-
-    if (!config("classpaths").isEmpty) {
-      b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
-    }
-
-    if (!config("mainClass").isEmpty) {
-      b += "Main-Class: " + config("mainClass")
-    }
-
-
-    Entry.write(
-      cwd.resolve("MANIFEST.MF"),
-      b.result()
-    )
-
-
-    // TODO: permissions?
-
-
-    // Now make a jar file
-    // NB: the 'jar' tool silenty replaces existing
-    // jars, which is what we would like.
-    b.clear
-    b += "jar"
-
-    var switches = "cfm"
-    if (config.asBoolean("verboseTools")) {
-      switches = switches + "v"
-    }
-    if (config.asBoolean("uncompressed")) {
-      switches = switches + "0"
-    }
-    b += switches
-
-    // TODO: Scala version in title?
-    val jarFileName =
-      if (config.asBoolean("noVersionTitle")) {
-        config("appName") + "_" + config("appVersion") + ".jar"
+      if (!config("classpaths").isEmpty) {
+        b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
       }
-      else config("appName") + ".jar"
-    b += jarFileName
 
-    b += "MANIFEST.MF"
-    b += "-C"
-    b += config("buildDir")
-    b += "."
+      if (!config("mainClass").isEmpty) {
+        b += "Main-Class: " + config("mainClass")
+      }
 
-    traceInfo("building jar...")
-    sh (b.result())
 
-    // Cleanup
-    Entry.delete(cwd.resolve("MANIFEST.MF"))
+      Entry.write(
+        cwd.resolve("MANIFEST.MF"),
+        b.result()
+      )
+
+
+      // TODO: permissions?
+
+
+      // Now make a jar file
+      // NB: the 'jar' tool silenty replaces existing
+      // jars, which is what we would like.
+      b.clear
+      b += "jar"
+
+      var switches = "cfm"
+      if (config.asBoolean("verboseTools")) {
+        switches = switches + "v"
+      }
+      if (config.asBoolean("uncompressed")) {
+        switches = switches + "0"
+      }
+      b += switches
+
+      // TODO: Scala version in title?
+      val jarFileName =
+        if (config.asBoolean("noVersionTitle")) {
+          config("appName") + "_" + config("appVersion") + ".jar"
+        }
+        else config("appName") + ".jar"
+      b += jarFileName
+
+      b += "MANIFEST.MF"
+      b += "-C"
+      b += config("buildDir")
+      b += "."
+
+      traceInfo("building jar...")
+      sh (b.result())
+
+      // Cleanup
+      Entry.delete(cwd.resolve("MANIFEST.MF"))
+    }
   }
 
 
-  /** Produce introspective output.
+  /** Produces introspective output.
     */
   def introspect()
   {
-    val cps =  config.asSeq("classnames")
 
-    if (cps.isEmpty) {
-      traceError("Please add classnames to an 'introspect' task. Use switch -classnames <list of class names>")
+    // ensure compiled classes exist
+    if (assertCompile("'introspect' request")) {
 
-    }
-    else {
+      val cps =  config.asSeq("classnames")
 
-      // ensure compiled classes exist
-      assertCompile("'introspect' request")
+      if (cps.isEmpty) {
+        traceError("Please add classnames to an 'introspect' task. Use switch -classnames <list of class names>")
 
-      val b = Seq.newBuilder[String]
-      b += "scalap"
-
-      if (config.asBoolean("private")) {
-        b += "-private"
       }
-      // Scalap verbose adds little beyond the titles CLASSPATH
-      // and FILENAME, so use it anyway.
-      b += "-verbose"
+      else {
 
-      b += "-classpath"
-      b += cwd.resolve(config("buildDir")).toString
+        val b = Seq.newBuilder[String]
+        b += "scalap"
 
-      cps.foreach{ cp =>
-        b  += cp
+        if (config.asBoolean("private")) {
+          b += "-private"
+        }
+        // Scalap verbose adds little beyond the titles CLASSPATH
+        // and FILENAME, so use it anyway.
+        b += "-verbose"
+
+        b += "-classpath"
+        b += cwd.resolve(config("buildDir")).toString
+
+        cps.foreach{ cp =>
+          b  += cp
+        }
+
+        //println(s"cps $cps")
+        //println(b.result())
+        traceInfo("scalap out:")
+        shPrint(b.result())
       }
-
-      //println(s"cps $cps")
-      //println(b.result())
-      traceInfo("scalap out:")
-      shPrint(b.result())
     }
   }
 
@@ -619,59 +658,63 @@ println(s"strict: ${b.result()}")
     */
   def bytecode()
   {
-    val cps =  config.asSeq("classnames")
 
-    if (cps.isEmpty) {
-      traceError("Please add classnames to a 'bytecode' task. Use switch -classnames <list of class names>")
+    // ensure compiled classes exist
+    if (assertCompile("'bytecode' request")) {
 
-    }
-    else {
+      val cps =  config.asSeq("classnames")
 
-      // ensure compiled classes exist
-      assertCompile("'bytecode' request")
+      if (cps.isEmpty) {
+        traceError("Please add classnames to a 'bytecode' task. Use switch -classnames <list of class names>")
 
-      val b = Seq.newBuilder[String]
-      b += "javap"
-
-      if (config.asBoolean("methodfields")) {
-        b += "-l"
       }
-      if (config.asBoolean("public")) {
-        b += "-public"
-      }
-      if (config.asBoolean("protected")) {
-        b += "-protected"
-      }
-      if (config.asBoolean("private")) {
-        b += "-private"
-      }
-      if (config.asBoolean("systemInfo")) {
-        b += "-sysinfo"
-      }
-      if (config.asBoolean("classInfo")) {
-        b += "-verbose"
-      }
+      else {
 
-      // All-important -c option
-      b += "-c"
+        val b = Seq.newBuilder[String]
+        b += "javap"
 
-      // libs
-      b += "-extdirs"
-      b += libPath.toString
+        if (config.asBoolean("methodfields")) {
+          b += "-l"
+        }
+        if (config.asBoolean("public")) {
+          b += "-public"
+        }
+        if (config.asBoolean("protected")) {
+          b += "-protected"
+        }
+        if (config.asBoolean("private")) {
+          b += "-private"
+        }
+        if (config.asBoolean("systemInfo")) {
+          b += "-sysinfo"
+        }
+        if (config.asBoolean("classInfo")) {
+          b += "-verbose"
+        }
+
+        // All-important -c option
+        b += "-c"
+
+        // libs
+        if (libPath != None) {
+          b += "-extdirs"
+          b += libPath.toString
+        }
 
 
-      b += "-classpath"
-      b += cwd.resolve(config("buildDir")).toString
+        b += "-classpath"
+        b += cwd.resolve(config("buildDir")).toString
 
-      // Classes to be disassembled
-      cps.foreach{ cp =>
-        b  += cp
+        // Classes to be disassembled
+        cps.foreach{ cp =>
+          b  += cp
+        }
+
+        //println(s"cps $cps")
+        //println(b.result())
+        traceInfo("javap out:")
+        shPrint(b.result())
       }
-
-      //println(s"cps $cps")
-      //println(b.result())
-      traceInfo("javap out:")
-      shPrint(b.result())
     }
   }
 

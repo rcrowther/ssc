@@ -1,4 +1,4 @@
--d . -verbose -toolcp Lib/scalatest_2.11-3.0.0-SNAP2 -optimise
+-d build -toolcp Lib/scalatest_2.11-3.0.0-SNAP2
 src/main/support/file/StringOps.scala
 src/main/support/file/TraverseEntryPath.scala
 src/main/support/file/TraverseEntryAttributes.scala
