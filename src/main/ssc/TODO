@@ -2,8 +2,7 @@
 And debug compiles?
 
 Deprecation and feature need recompile - warn?
-
-Lack of libdir should not be a fail.
+grep and srcClean would be nice
 
 Stop warning if there's no config file at all.
 
@@ -11,7 +10,6 @@ doc dot'ting to be added.
 
 Get verbose handling.
 
-I'm wanting .jar now.
 
 Threads
 Script runner and ssc build
@@ -25,9 +23,6 @@ Should overall verify input files for multiple/type input too?
 Should allow default classes to have spacing?
 
 
-Commandline needs a help
-
-
 
 
 protect against pre/post slashes in user-configured paths?
@@ -35,6 +30,7 @@ protect against pre/post slashes in user-configured paths?
 
 
 == Done
+"Done" is abandoned here as have a basic compile/install loop
 Really horrible undocumented rendering from processes , now has line ends at least.
 Fixed nasty bug causing scaladoc fail and spew.
 Nasty parser bug fixed (empty Booleans)

@@ -64,23 +64,43 @@ trait Shell {
     * 
     * Catches stdOut and stdErr as a string.
     *
+    * If errors are thrown (non-zero) returns stdErr.
     * Blocks.
     *
     * See [[http://www.scala-lang.org/api/current/index.html#scala.sys.process.ProcessBuilder]]
     */
 // This runt I trust...
+//Throws nonm-zero errors?
   def shCatch(xs: Seq[String])
-      : Either[Exception, (String, String)] =
+      : (Int, String, String) =
   {
+      val bout = new StringBuilder()
+      val berr = new StringBuilder()
+
+      val pl = new ProcessLogger {
+        def out(s: => String): Unit = {
+         bout ++= s
+ bout ++= System.lineSeparator()
+}
+        def err(s: => String): Unit = {
+berr ++= s
+ berr ++= System.lineSeparator()
+}
+        def buffer[T](f: => T): T = f
+      }
+      val retCode = xs ! (pl)
+(retCode, berr.result(), bout.result())
+/*
     try {
-      val b = new StringBuilder()
+
       val stdOut: String = xs !! ProcessLogger(line => {b ++= line; b ++= System.lineSeparator()})
       Right((stdOut, b.result()))
     }
     catch {
       case e: Exception =>
-        Left(e)
+        Left(b.result())
     }
+*/
   }
 
   /** Invoke a shell(like) command.

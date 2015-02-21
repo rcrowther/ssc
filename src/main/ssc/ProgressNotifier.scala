@@ -3,7 +3,7 @@ package ssc
 import java.util.Timer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.ScheduledThreadPoolExecutor
-
+import java.util.Random
 
 
 /** Outputs messages for progress.
@@ -21,31 +21,61 @@ class ProgressNotifier(
 )
 {
   class PrintBar extends Runnable {
+    val random = new Random()
+    val messages = Seq("Pot empty", "Onwards", "So it goes", "Industrious")
+    var barLen = initialMessage.size
+    var currentMessage = initialMessage
+
+    // print the initial message...
+    printer(currentMessage)
 
     def run()
     {
-      if(barLen > maxLength) {
-        // back...
-        printer("\r")
-        // erase
-        printer(" " * {maxLength + currentMessage.size + 1})
-        // back...
-        printer("\r")
-        barLen = 0
-        currentMessage = "Taking a while"
-        printer(currentMessage)
+      if(barLen < maxLength) {
+        printer(".")
+        barLen += 1
+      }
+      else {
+        // back.  Only solid way I found is carridge returns.
+        printer("\r" + {" " * {maxLength + 1}})
+        printer("\r" + currentMessage)
       }
 
-      printer(".")
-      barLen += 1
+
+    }
+  }
+
+  class Buzzer extends Runnable {
+    val random = new Random()
+    var moveDelay = random.nextInt(9)
+    var pos = random.nextInt(maxLength)
+
+    def run()
+    {
+      // back and erase
+      printer("\r")
+      printer(" " * {pos})
+      
+      if(moveDelay > 0) {
+        val nextChar = random.nextInt(3) match {
+          case 0 => """\"""
+          case 1 => "/"
+          case 2 => "-"
+        }
+        printer(nextChar)
+        moveDelay -= 1
+      }
+      else {
+        printer(" ")
+        moveDelay = random.nextInt(9)
+        pos = random.nextInt(maxLength)
+      }
     }
   }
 
 
-
   private val exec = new ScheduledThreadPoolExecutor(1)
-  private var barLen = 0
-  private var currentMessage = initialMessage
+
 
   // Autostart on construction.
   // Fixed delay is nicer, less likely to stutter.
@@ -55,21 +85,36 @@ class ProgressNotifier(
       printer("...\n")
     }
     else {
-      printer(currentMessage)
+      //hide cursor
+      printer("\033[?25l")
+
       exec.scheduleWithFixedDelay(
         new PrintBar,
-        2L,
-        1L,
-        TimeUnit.SECONDS
+        10L,
+        700L,
+        TimeUnit.MILLISECONDS
       )
+      /*
+       
+       exec.scheduleWithFixedDelay(
+       new Buzzer,
+       100L,
+       100L,
+       TimeUnit.MILLISECONDS 
+       )
+       */
     }
   }
 
-  def stop () = {
+  def stop ()
+  {
     if (verbose && !disable) {
       printer("\n")
     }
     exec.shutdownNow()
+
+    //show cursor
+    printer("\033[?25h")
   }
 
 }//ProgressNotifier

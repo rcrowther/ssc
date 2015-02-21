@@ -80,7 +80,7 @@ class Action(
   // orphans and configs. Bothered?
   private def incrementalSrcs(
     srcPath: Path
-)
+  )
       : Traversable[String] =
   {
     traceInfo("using incremental compile")
@@ -352,12 +352,13 @@ class Action(
 
   /** Compiles source files to the buildDir.
     *
-    * This is the raw action, and should be protected against missing sources, etc.
+    * This is the raw action, and should be protected against missing
+    * sources, etc.
     *
     * @return true if a compile succeeded, else false.
     */
   def doCompile()
-  : Boolean =
+      : Boolean =
   {
 
     // Empty the build directory, if not incrementally compiling
@@ -395,33 +396,28 @@ class Action(
         verbose,
         config.asBoolean("disableProgress"),
         "compiling",
-        10
+        22
       )
 
+      val (retCode, stdErr, stdOut) = shCatch (b.result())
+      pb.stop()
+      trace(stdErr)
+      trace(stdOut)
 
-      //TODO: No-throw needs error catching
-      shCatch (b.result()) match {
-        case Left(x) => {
-          pb.stop()
-          println(x)
-          traceWarning("compilation errors")
-          false
-        }
-        case Right(x) => {
-          pb.stop()
-          println(x._1)
-          println(x._2)
-          traceInfo("done")
-          true
-        }
+      if (retCode != 0) {
+        traceWarning("compilation errors")
+        false
       }
-
+      else true
     }
+
+
   }
 
-  ////////////////
+
+  /////////////
   // Control //
-  ////////////////
+  /////////////
 
   def assertCompile(requester: String)
       : Boolean =
@@ -442,6 +438,7 @@ class Action(
       }
     }
   }
+
 
 
   ////////////////
@@ -480,21 +477,16 @@ class Action(
         verbose,
         config.asBoolean("disableProgress"),
         "documenting",
-        10
+        22
       )
 
-      shCatch (b.result()) match {
-        case Left(x) => {
-          pb.stop()
-          println(x)
-          traceWarning("compilation errors")
-        }
-        case Right(x) => {
-          pb.stop()
-          println(x._1)
-          println(x._2)
-          traceInfo("done")
-        }
+      val (retCode, stdErr, stdOut) = shCatch (b.result())
+      pb.stop()
+      trace(stdErr)
+      trace(stdOut)
+
+      if (retCode != 0) {
+        traceWarning("documentation errors")
       }
     }
   }
