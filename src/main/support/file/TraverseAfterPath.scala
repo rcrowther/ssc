@@ -54,9 +54,17 @@ extends TraversePathCompanion[TraverseAfterPath]
     followLinks: Boolean,
     depth: Int
   )
-      : TraverseAfterPath =
+      : Traversable[Path] =
   {
-    new TraverseAfterPath(path, followLinks, depth)
+    //new TraverseAfterPath(path, followLinks, depth)
+    // + 1 because the Java interface is consistent and reads only the 
+    // target path file unless going down + 1.
+    // take(1) because the read then includes the target file
+    // (at the end, this is After traversal).
+    // Protect agains adding one to Int.max...
+    val d =  if(depth == Integer.MAX_VALUE) depth else (depth -1)
+    val tp = new TraverseAfterPath(path, followLinks, depth)
+    tp.take(tp.size - 1)
   }
 
 }//TraverseAfterPath

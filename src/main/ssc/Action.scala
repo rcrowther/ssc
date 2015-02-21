@@ -360,14 +360,10 @@ class Action(
   : Boolean =
   {
 
-    // Erase the build directory, if not incrementally compiling
-    // TODO: Necessary, if files are provided? Oh well.
+    // Empty the build directory, if not incrementally compiling
     if(!config.asBoolean("incremental") && dirIsPopulated(buildPath, ".class")) {
-      Dir.delete(buildPath)
+      Dir.clear(buildPath)
     }
-
-    // Assert a build directory exists
-    Dir.create(buildPath)
 
 
     // Build some compile options
@@ -504,17 +500,17 @@ class Action(
   }
 
 
-  /** Deletes the build dir (and all compiled material).
+  /** Empties the build dir (so all compiled material).
     */
   def clear() {
-    traceInfo(s"deleting build directory $buildPath...")
-    Dir.delete(buildPath)
+    traceInfo(s"emptying build directory $buildPath...")
+    Dir.clear(buildPath)
   }
 
 
   /** Deletes all ssc-generated material.
     * 
-    * Skips '.jar' files (we don'tknow their name) and build.ssc
+    * Skips '.jar' files (we don't know their name) and build.ssc
     * definitions.
     */
   def clean() {

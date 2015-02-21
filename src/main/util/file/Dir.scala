@@ -191,11 +191,27 @@ object Dir
     if (Files.exists(path) && !Files.isDirectory(path)) false
     else {
       if (Files.exists(path) ) {
-        TraverseAfterPath(path).foreach { p =>
+        new TraverseAfterPath(path, true, Integer.MAX_VALUE).foreach { p =>
           Files.delete(p)
         }
       }
       !exists(path)
+    }
+  }
+
+  def clear(path: Path)
+      : Boolean =
+  {
+
+    // Protect against files
+    if (Files.exists(path) && !Files.isDirectory(path)) false
+    else {
+      if (Files.exists(path) ) {
+        TraverseAfterPath(path).foreach { p =>
+          Files.delete(p)
+        }
+      }
+      true
     }
   }
 
