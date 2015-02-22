@@ -270,8 +270,8 @@ object Runner
 
     //Hi-ho, off we go
     val taskConfigSwitchless = taskConfig.map{case(k, v) => (k.drop(1) -> v)}
-    val runTask = new Action(cwd, Config(taskConfigSwitchless))
-    runTask.run(task)
+    val runTask = new Action(task, cwd, Config(taskConfigSwitchless))
+    runTask.run()
   }
 
 

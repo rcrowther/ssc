@@ -145,7 +145,7 @@ class ProgressNotifier(
 
 
   // Autostart on construction.
-  // Fixed delay is nicer, less likely to stutter.
+
   if (verbose) {
 
     // Don't hide the cursor for simple printouts
@@ -160,6 +160,7 @@ class ProgressNotifier(
 
       meterType match {
 
+        //NB: Delay is nicer than rate, less likely to stutter?
         case "progress" =>
           exec.scheduleWithFixedDelay(
             new PrintBar,
@@ -209,9 +210,7 @@ class ProgressNotifier(
 
       // reshow the cursor
       printer("\033[?25h")
-
     }
-
   }
 
 }//ProgressNotifier

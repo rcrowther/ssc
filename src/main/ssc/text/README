@@ -82,6 +82,14 @@ See all the options,
 
 ssc -help
 
+
+
+And this,
+
+ssc -meter buzz <someTask>
+
+Waiting for Scala on my computers is real dull. This cheers me up.
+
 I havn't decided which to keep yet. Best say, "subject to alteration".
 
 

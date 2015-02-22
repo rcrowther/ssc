@@ -5,7 +5,6 @@ Guess package names for 'run'.
 
 Printout versioning?
 
-Deprecation and feature need recompile - warn?
 grep and srcClean would be nice
 
 Stop warning if there's no config file at all.

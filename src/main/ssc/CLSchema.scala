@@ -57,8 +57,8 @@ object CLSchema {
     // scalac (compile) options //
     "-optimise" -> ("faster bytecode by code analysis", "false"),
     "-incremental" -> ("compile only changed files", "true"),
-    "-feature" -> ("turn on Scala's feature warnings", "false"),
-    "-deprecation" -> ("turn on Scala's deprecation warnings", "false"),
+    "-feature" -> ("turn on Scala's feature warnings (needs new compile to report)", "false"),
+    "-deprecation" -> ("turn on Scala's deprecation warnings (needs new compile to report)", "false"),
      "-meter"  -> ("show a progressbar, one of 'none', 'progress' (default), 'bounce', 'buzz', ", "progress", false, 1)
   )
 

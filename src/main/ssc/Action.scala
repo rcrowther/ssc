@@ -16,28 +16,34 @@ import java.nio.file.Path
   * default config, which is keyed by 'task' names. It is expected
   * that the code which creates and calls this class will,
   *
-  *  - understand which task is intended
-  *  - selected the appropriate config from a projectConfig map, by task
-  *  - if appropriate, overlaid the taskConfig with commandline options (some auto-actioning may not require this)
-  *  - will invoke the class with the taskName.
+  *  - understand which task is intended.
+  *  - select the appropriate config from a projectConfig map, by task.
+  *  - if appropriate, overlaid the taskConfig with commandline options (some auto-actioning may not require this).
+  *  - supply the data.
   *
   * Instances of the class handle their own output of report
   * information.
   *
+  * @param taskNmae the name of the task which can be invoked using `run`.
   * @param cwd the directory to work actions from. All
   *  actions are relative from this value.
   * @param config a set of values to modify the actions
   *  according to expressed preferences.  
   */
 class Action(
-  cwd: Path,
-  config: Config
+  val taskName: String,
+  val cwd: Path,
+  val config: Config
 )
     extends sake.Trace
     with sake.util.noThrow.Shell
+    with Runnable
 {
+  // construct Trace abstracts from the incoming config
   protected val inColor: Boolean = config.asBoolean("inColor")
   protected val verbose: Boolean = config.asBoolean("verbose")
+
+
 
   ///////////
   // Utils //
@@ -746,7 +752,7 @@ class Action(
     }
   }
 
-  def run(taskName:String) {
+  def run() {
     //trace(s"action route...$taskName")
     taskName match {
       case "clear" => clear()
