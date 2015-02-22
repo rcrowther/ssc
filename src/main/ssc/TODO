@@ -3,6 +3,7 @@ And debug compiles?
 
 Guess package names for 'run'.
 
+Printout versioning?
 
 Deprecation and feature need recompile - warn?
 grep and srcClean would be nice
@@ -25,7 +26,7 @@ Should overall verify input files for multiple/type input too?
 
 Should allow default classes to have spacing?
 
-
+when running, hunt for packages?
 
 
 protect against pre/post slashes in user-configured paths?

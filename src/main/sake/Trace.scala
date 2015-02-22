@@ -78,7 +78,7 @@ trait Trace
    */
   def traceError(line: String)
   {
-    trace(RED + "** " + line + WHITE)
+    trace(RED + "**Error**" + WHITE + line )
   }
 
   /* Write output to standard output stream

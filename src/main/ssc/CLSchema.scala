@@ -59,7 +59,7 @@ object CLSchema {
     "-incremental" -> ("compile only changed files", "true"),
     "-feature" -> ("turn on Scala's feature warnings", "false"),
     "-deprecation" -> ("turn on Scala's deprecation warnings", "false"),
-     "-disableProgress"  -> ("disable the progressbar", "false")
+     "-meter"  -> ("show a progressbar, one of 'none', 'progress' (default), 'bounce', 'buzz', ", "progress", false, 1)
   )
 
   private val docDirSwitch = Map[String, CLSwitchOption](

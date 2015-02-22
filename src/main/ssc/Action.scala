@@ -394,9 +394,9 @@ class Action(
     else {
 
       val pb = new ProgressNotifier(
+        config("meter"),
         traceInfoPrint _,
         verbose,
-        config.asBoolean("disableProgress"),
         "compiling",
         22
       )
@@ -476,9 +476,9 @@ class Action(
 
 
       val pb = new ProgressNotifier(
+        config("meter"),
         traceInfoPrint _,
         verbose,
-        config.asBoolean("disableProgress"),
         "documenting",
         22
       )
