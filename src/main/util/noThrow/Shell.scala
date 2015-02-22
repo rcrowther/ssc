@@ -69,8 +69,8 @@ trait Shell {
     *
     * See [[http://www.scala-lang.org/api/current/index.html#scala.sys.process.ProcessBuilder]]
     */
-// This runt I trust...
-//Throws nonm-zero errors?
+// This runt I trust... or it's the one I trust, not the same thing.
+//Throws non-zero errors?
   def shCatch(xs: Seq[String])
       : (Int, String, String) =
   {
@@ -88,19 +88,10 @@ berr ++= s
 }
         def buffer[T](f: => T): T = f
       }
-      val retCode = xs ! (pl)
-(retCode, berr.result(), bout.result())
-/*
-    try {
 
-      val stdOut: String = xs !! ProcessLogger(line => {b ++= line; b ++= System.lineSeparator()})
-      Right((stdOut, b.result()))
-    }
-    catch {
-      case e: Exception =>
-        Left(b.result())
-    }
-*/
+      val retCode = xs ! (pl)
+
+      (retCode, berr.result(), bout.result())
   }
 
   /** Invoke a shell(like) command.

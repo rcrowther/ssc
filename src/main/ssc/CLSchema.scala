@@ -136,9 +136,14 @@ object CLSchema {
      */
   )
 
+  private val runSwitches = Map[String, CLSwitchOption](
+    "-class" -> ("specify a class to run", "", false, 1)
+    //"-noGuess" -> ("do not try to guess packaging", "false")
+  )
+
   private val jarSwitches = Map[String, CLSwitchOption](
     "-classpaths" -> ("add classpaths to the manifest", "", true, 64),
-    "-mainClass" -> ("Specify a main class for an executable file", "", false, 1),
+    "-mainClass" -> ("specify a main class for an executable file", "", false, 1),
     "-noVersionTitle" -> ("the jar name will be the name of the app only", "false"),
     "-uncompressed" -> ("the resulting jar will not be compressed", "false")
   )
@@ -175,7 +180,7 @@ object CLSchema {
     // Full cleanup
     "clean" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     "compile" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "run" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
+    "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "reload" -> Seq(outputFormatSwitch)

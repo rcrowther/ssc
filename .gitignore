@@ -5,6 +5,7 @@ bin/
 # ignore all target directories
 target/
 build/
+Doc/
 
 # ignore all files ending with ~
 *~ 

@@ -13,6 +13,10 @@ trait Trace
   private val YELLOW = "\033[33m"
   private val RED = "\033[31m"
   private val WHITE = "\033[37m"
+  private val DIMWHITE = "\033[2m" 
+  private val BOLDWHITE = "\033[1m"
+  private val RESET = "\033[0m"
+
 
   /** Define if verbose prints are to go to the output.
     */

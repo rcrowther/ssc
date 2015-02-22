@@ -193,7 +193,7 @@ class Action(
     */
   private def buildScalaStandardOptions(
     executable : String,
-    destination : Path,
+    destination : Option[Path],
     usePrecompiled : Boolean
   )
       : scala.collection.mutable.Builder[String, Seq[String]] =
@@ -212,9 +212,10 @@ class Action(
     }
 
     //set destination
-    b += "-d"
-    b += destination.toString
-
+    if(destination != None) {
+      b += "-d"
+      b += destination.get.toString
+    }
     // Add libs
     dirEntryPaths(libPath, ".jar").foreach{ p =>
       b += "-toolcp"
@@ -224,6 +225,7 @@ class Action(
 
     // Add precompiled paths.
     // Needs ignoring for soft scaladocing?
+
     if (usePrecompiled) {
       b += "-classpath"
       b += cwd.resolve(config("buildDir")).toString
@@ -370,7 +372,7 @@ class Action(
     // Build some compile options
     val b = buildScalaStandardOptions(
       "scalac",
-      cwd.resolve(config("buildDir")),
+      Some(cwd.resolve(config("buildDir"))),
       true
     )
 
@@ -400,6 +402,7 @@ class Action(
       )
 
       val (retCode, stdErr, stdOut) = shCatch (b.result())
+
       pb.stop()
       trace(stdErr)
       trace(stdOut)
@@ -458,7 +461,7 @@ class Action(
 
       val b = buildScalaStandardOptions(
         "scaladoc",
-        cwd.resolve(config("docDir")),
+        Some(cwd.resolve(config("docDir"))),
         false
       )
 
@@ -481,6 +484,7 @@ class Action(
       )
 
       val (retCode, stdErr, stdOut) = shCatch (b.result())
+
       pb.stop()
       trace(stdErr)
       trace(stdOut)
@@ -529,6 +533,42 @@ class Action(
     }
   }
 
+  def runK()
+  {
+    if(!dirIsPopulated(buildPath, ".class")) {
+      traceWarning(s"A 'run' task has been requested, but no class files can be found in the build directory: ${buildPath.toString}")
+
+    }
+    else {
+      val c = config("class")
+
+      if (c.isEmpty) {
+        traceError("Please add classnames to a 'run' task. Use the switch -class <classname>")
+      }
+      else {
+
+        val b = buildScalaStandardOptions(
+          "scala",
+          None,
+          true
+        )
+        b += "-howtorun:object"
+        b += "-nc"
+        b += c
+        //println(s"run : ${b.result()}")
+        //val r = java.lang.Runtime.getRuntime()
+        //r.exec(b.result.toArray)
+        //r.exec("ls -l &")
+        val (retCode, stdErr, stdOut) = shCatch (b.result())
+        trace(stdErr)
+        trace(stdOut)
+
+        if (retCode != 0) {
+          traceWarning("run errors")
+        }
+      }
+    }
+  }
 
   /** Produces a library jar file.
     */
@@ -713,6 +753,7 @@ class Action(
       case "clean" => clean()
       case "compile" => compile()
       case "doc" => doc()
+      case "run" => runK()
       case "jar" => jar()
       case "introspect" => introspect()
       case "bytecode" => bytecode()

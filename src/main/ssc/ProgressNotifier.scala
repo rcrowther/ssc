@@ -22,7 +22,20 @@ class ProgressNotifier(
 {
   class PrintBar extends Runnable {
     val random = new Random()
-    val messages = Seq("Pot empty", "Onwards", "So it goes", "Industrious")
+    val messages = Seq(
+      "pot empty",
+      "onwards",
+      "so it goes",
+      "industrious",
+      "the rain",
+      "endless",
+      "enough!",
+      "waiting",
+      "poetry",
+      "dark",
+      "candles",
+      "reeds"
+    )
     var barLen = initialMessage.size
     var currentMessage = initialMessage
 
@@ -36,9 +49,15 @@ class ProgressNotifier(
         barLen += 1
       }
       else {
+
         // back.  Only solid way I found is carridge returns.
-        printer("\r" + {" " * {maxLength + 1}})
-        printer("\r" + currentMessage)
+        // And thaat doesn't work?
+        //printer("\r" + {" " * {maxLength + 1}})
+        //printer("\r" + currentMessage)
+        printer("\033[1K")
+        currentMessage = messages(random.nextInt(7))
+        barLen = currentMessage.size
+        printer(currentMessage)
       }
 
 
@@ -73,6 +92,34 @@ class ProgressNotifier(
     }
   }
 
+  class Bounce extends Runnable {
+    val img = Seq(
+      "O               ",
+      "OOOO            ",
+      "    OOOOOOOO    ",
+      "            OOOO",
+      "               O"
+    )
+    var i = 0
+    var direction = 1
+    var limit = img.size - 1
+
+    def run()
+    {
+      
+      if (i >= limit) {
+        direction = -1
+      }
+      if (i <= 0) {
+        direction = 1
+      }
+        //printer("\033[1K")
+      printer("\r")
+      printer(img(i))
+      i += direction
+    }
+  }
+
 
   private val exec = new ScheduledThreadPoolExecutor(1)
 
@@ -87,13 +134,21 @@ class ProgressNotifier(
     else {
       //hide cursor
       printer("\033[?25l")
-
+      /*
+       exec.scheduleWithFixedDelay(
+       new PrintBar,
+       10L,
+       700L,
+       TimeUnit.MILLISECONDS
+       )
+       */
       exec.scheduleWithFixedDelay(
-        new PrintBar,
+        new Bounce,
         10L,
         700L,
         TimeUnit.MILLISECONDS
       )
+
       /*
        
        exec.scheduleWithFixedDelay(
@@ -103,6 +158,7 @@ class ProgressNotifier(
        TimeUnit.MILLISECONDS 
        )
        */
+
     }
   }
 

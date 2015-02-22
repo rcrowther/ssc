@@ -20,13 +20,7 @@ class Config(val repr: Map[String, Seq[String]])
   {
     repr(k)(0)
   }
-/*
-  def getSeq(k: String)
-      : Seq[String] =
-  {
-    repr(k)
-  }
-*/
+
   def asSeq(k: String)
       : Seq[String] =
   {

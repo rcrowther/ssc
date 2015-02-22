@@ -1,6 +1,9 @@
 == TODO
 And debug compiles?
 
+Guess package names for 'run'.
+
+
 Deprecation and feature need recompile - warn?
 grep and srcClean would be nice
 
