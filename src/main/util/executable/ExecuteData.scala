@@ -4,9 +4,14 @@ import java.nio.file.Path
 import sake.util.file._
 
 
+
+/** Carries data returned by the 'find' tools.
+*/
+// Version is optional, as sometimes it is impractical to derive,
+// and sometimes developing, and sometimes non-existant (see Generic)
 class ExecuteData(
   val path: Path,
-  val version: Version
+  val version: Option[Version]
 )
 {
   override def toString: String = {
@@ -16,7 +21,7 @@ class ExecuteData(
 
 
 object ExecuteData {
-  protected val emptyThing = new ExecuteData("".toPath, Version.empty){
+  protected val emptyThing = new ExecuteData("".toPath, None){
     //override val path: Path = throw new Exception("executable is empty - not found!")
     //override val version: Version = throw new Exception("executable is empty - not found!")
     override def toString: String = "empty executedata"
@@ -26,7 +31,7 @@ object ExecuteData {
 
   def apply(
     path: Path,
-    version: Version
+    version: Option[Version]
   )
       : ExecuteData =
   {

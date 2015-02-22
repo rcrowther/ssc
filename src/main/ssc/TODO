@@ -9,10 +9,9 @@ grep and srcClean would be nice
 
 Stop warning if there's no config file at all.
 
-doc dot'ting to be added.
-
 Get verbose handling.
 
+Fix test folders!
 
 Threads
 Script runner and ssc build

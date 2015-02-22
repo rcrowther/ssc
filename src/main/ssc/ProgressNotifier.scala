@@ -13,7 +13,7 @@ import java.util.Random
   * the class print appropriate messages.
   * 
   * @param meterType currently 'none', 'bounce', 'buzz', 'progress'.
-  * @verbose if true, show progress indications, if false, the class
+  * @param verbose if true, show progress indications, if false, the class
   *  does nothing.
   * @param initialMessage custom message shown by some meters, and
   *  the 'none' meter.

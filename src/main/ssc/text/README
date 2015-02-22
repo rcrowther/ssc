@@ -74,7 +74,9 @@ Or look at the source code for the class `Configuration`, which is definitive.
  
 
 === Commandline
-A useful sometimes extra commandline option,
+Any of these options can be used in a build.ssc file.
+
+SSC is a real commandline tool, so it prints nothing but errors. So a useful commandline option,
 
 ssc -verbose
 
@@ -97,6 +99,30 @@ I havn't decided which to keep yet. Best say, "subject to alteration".
 One bad start is lost dependancies for the code. By default, SSC looks in `lib/` then `Lib/`. Make a build.ssc file to override, e.g. with this line,
 
 libFiles = /path/to/my/library
+
+== Diagrams
+Like the fancy diagrams in online scaladoc? You need two items,
+
+~ A fairly hefty computer or small codebase
+Not for nothing does diagram production come with options like 'timeout' and 'restarts'
+~ The program 'dot'
+'dot' is confusing. 'dot' is a graph description language which comes as part of the 'graphviz' package. As do several other programs. And the program which writes 'dot' files, 'dot', can also visualize the files. But so can others.
+
+For Debian-based system, do this,
+
+install the general 'graphviz' package on the computer
+...with apt-get/synaptic, whatever. Old versions seem to be ok.
+
+Run ssc
+On an installed system, navigate to the top folder to be documented, ten,
+
+ssc -diagrams -verbose -meter buzz doc
+
+A meter will help pass the time...
+
+On packaged Linux systems, ssc should find everything ok. There are options for customizing, of course.
+
+ https://en.wikipedia.org/wiki/Graphviz
 
 
 === build.ssc

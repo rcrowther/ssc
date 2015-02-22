@@ -10,14 +10,14 @@ import sake.support.parser.{CLSwitchOption, CLArgOption}
   * the switches are duplicated across tasks; for example,
   * 'scalaSrcDir' should appear under every task configuration which
   * may need to compile. See `taskSwitchSeq`.
-*
-* Please note the options here are those which make their way to the projects.
-* A couple of options are caught by [[ssc.SscRunner]], see the private 
-* definition `addMainhandledHelp`.
+  *
+  * Please note the options here are those which make their way to the
+  * projects. A couple of options are caught by [[ssc.Runner]]. See
+  * the private definition `addMainhandledHelp`.
   */
 object CLSchema {
 
-  /** Switch configuration covering all project activity. 
+  /** Switch configuration covering all project activity.
     *
     * Is left public as we reference it in general help.
     */
@@ -36,7 +36,8 @@ object CLSchema {
     "-inColor" -> ("Output in color", "false")
   )
 
-  // clean needs docpath and dirpath, so they are seperate
+
+  // clean needs docpath and dirpath, so this is seperate
   private val buildDirSwitch = Map[String, CLSwitchOption](
     "-buildDir" -> ("path of the build directory", "build", false, 1)
   )
@@ -47,25 +48,29 @@ object CLSchema {
       * Note: Nothing to do with document output.
       */
     "-charset" -> ("charset of source documents", "UTF-8", false, 1),
-    // Building //
 
+
+    // Building //
     "-libDir" -> CLSwitchOption("paths of the library directories", Seq("lib","Lib"), true, 32),
     "-scalaSrcDir" -> CLSwitchOption("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), true, 32),
     "-javaSrcDir" -> CLSwitchOption("path to Java source files", Seq("src/main/java","src/java"), true, 32),
     "-testDir" -> CLSwitchOption("path to test directory", Seq("src/test", "test"), true, 32),
+
 
     // scalac (compile) options //
     "-optimise" -> ("faster bytecode by code analysis", "false"),
     "-incremental" -> ("compile only changed files", "true"),
     "-feature" -> ("turn on Scala's feature warnings (needs new compile to report)", "false"),
     "-deprecation" -> ("turn on Scala's deprecation warnings (needs new compile to report)", "false"),
-     "-meter"  -> ("show a progressbar, one of 'none', 'progress' (default), 'bounce', 'buzz', ", "progress", false, 1)
+    "-meter"  -> ("show a progressbar, one of 'none', 'progress' (default), 'bounce', 'buzz', ", "progress", false, 1)
   )
+
 
   private val docDirSwitch = Map[String, CLSwitchOption](
     // scaladoc options //
     "-docDir" -> ("path to documentation directory", "Doc", false, 1)
   )
+
 
   private val docSwitches = Map[String, CLSwitchOption](
 
@@ -96,7 +101,7 @@ object CLSchema {
       * will request compilation. Compilation is performed according
       * to compilation keys, including `incremental`.
       */
-   // "-strict" -> ("always assemble from source files (if false, will do it's own compile which always succeeds and produces documentation)", "false"),
+    // "-strict" -> ("always assemble from source files (if false, will do it's own compile which always succeeds and produces documentation)", "false"),
 
     // doc formatting
     /** A title to scaladoc, will appear in tabs and meta-data elements.
@@ -122,24 +127,25 @@ object CLSchema {
       *
       * A line of text. Can be HTML, so HTML anchors, etc.
       */
-    "-footer" -> ("a text footer to each page", "By SSC")
+    "-footer" -> ("a text footer to each page", "By SSC"),
 
 
-    /*
-     // Needs fixing in config
-     "-diagrams" -> ("false"),
-     "-dotExecutable" -> ("usr/bin/dot"),
-     "-diagramTimeout" -> ("10"),
-     /** The maximum number of superclasses or subclasses to show in a diagram
-     */
-     "-diagramMaxClasses" -> ("8"),
-     */
+
+    // Dot/diagram production //
+    "-diagrams" -> ("Create inheritance diagrams for classes, traits and packages", "false"),
+    "-dotPath" -> ("path to the dot executable, which produces the diagrams (ssc will guess, but the path can be entered explicitly here)", "", false, 1),
+    "-dotRestarts" -> ("number of times to restart a malfunctioning dot process before abandoning diagram production (default: 5)", "5", false, 1),
+    "-dotTimeout" -> ("the timeout before the dot util is forcefully closed, in seconds (default: 10)", "10", false, 1),
+    "-dotMaxClasses" -> ("The maximum number of superclasses or subclasses to show in a diagram (default: 8)", "8", false, 1),
+    "-dotMaxImplicits" -> ("The maximum number of implicitly converted classes to show in a diagram (default: 2)", "2", false, 1)
   )
+
 
   private val runSwitches = Map[String, CLSwitchOption](
     "-class" -> ("specify a class to run", "", false, 1)
-    //"-noGuess" -> ("do not try to guess packaging", "false")
+      //"-noGuess" -> ("do not try to guess packaging", "false")
   )
+
 
   private val jarSwitches = Map[String, CLSwitchOption](
     "-classpaths" -> ("add classpaths to the manifest", "", true, 64),
@@ -153,6 +159,7 @@ object CLSchema {
     "-private" -> ("print private definitions", "false"),
     "-classnames" -> CLSwitchOption("classnames to introspect", Seq.empty[String], true, 64)
   )
+
 
   private val bytecodeSwitches = Map[String, CLSwitchOption](
     "-methodfields" -> ("print field (variables) tables in methods", "false"),
@@ -186,6 +193,7 @@ object CLSchema {
     "reload" -> Seq(outputFormatSwitch)
   )
 
+
   /** All switches for a task.
     *
     * Generated from `taskSwitchSeq`, *not* `tasks`
@@ -196,10 +204,12 @@ object CLSchema {
       (k -> vt)
     }
 
+
   /** All tasks and a description.
     *
-    * This value exists to provide help in a way the commandline parser can
-    * recognise. Do not use for  commandline parsing. Or risk mind-warp. 
+    * This value exists to provide help in a way the commandline
+    * parser can recognise. Do not use for commandline parsing. Or
+    * risk mind-warp.
     */
   val tasks = Map[String, CLArgOption](
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",

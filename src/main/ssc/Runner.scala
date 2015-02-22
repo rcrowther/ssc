@@ -306,7 +306,6 @@ object Runner
     }
     else {
 
-
       // Test for, and if necessary apply, the -verbose option,
       // ...this applying to the runner too.
       verbose = inputArgs.contains("-verbose")

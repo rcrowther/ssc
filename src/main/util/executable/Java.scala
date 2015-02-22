@@ -7,31 +7,31 @@ object Java
     extends FindExecutable
 {
 
-  def version : Version =
+  def version : Option[Version] =
   {
     // Yup, java version goes to stdErr, on Linux...
     shCatch (Seq("java", "-version"), false, true) match {
-      case Left(e) => Version.empty
+      case Left(e) => None
       case Right(str) => {
         val openB = str.indexOf('"')
         val closeB = str.indexOf('"', openB + 1)
         // Little check so we are ok
-        if (openB < closeB) Version(str.slice(openB + 1, closeB))
-        else Version.empty
+        if (openB < closeB) {
+          Some(Version(str.slice(openB + 1, closeB)))
+          }
+        else None
       }
     }
   }
 
-  /**
-    * @param customPath user can override the executable path
-    */
+
   def find(
     customPath: Path,
     verbose: Boolean,
     required: Boolean,
     versionRequired: Version
   )
-      : ExecuteData =
+      : Option[ExecuteData] =
   {
     val p =
       if(!customPath.isEmpty) customPath
@@ -49,10 +49,10 @@ object Java
 
         (env + "/bin/java").toPath
       }
-    //if (Files.isExecutable(p)) {
-    ExecuteData(p, Version.empty)
-    //}
-    //else ExecuteData.empty
+    if (Files.isExecutable(p)) {
+    Some(ExecuteData(p, version))
+    }
+    else None
   }
 
   /** Produce a library jar file.

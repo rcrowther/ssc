@@ -1,9 +1,12 @@
 package ssc
 
-import sake.util.file._
 import java.io.File
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.Path
+
+import sake.util.file._
+import sake.util.executable.FindExecutable
+
 
 
 /** Carries actions ssc can make.
@@ -316,22 +319,52 @@ class Action(
     }
 
 
+
     // "Basically, sourcepath allows you to compile the standard library without anything
     // on the classpath. The compiler will create class symbols for source files based on their path and name."
     // Bollocks.
     //println("scaladoc line:" + b.result())
 
-    /*
-     if (!config("diagrams").isEmpty) {
-     b +=  "-diagrams"
-     b += "-diagrams-dot-path"
-     b += config("executable")
-     b += "-diagrams-dot-timeout"
-     b += config("diagramTimeout")
-     b += "-diagrams-max-classes"
-     b += config("diagramMaxClasses")
-     }
-     */
+    // Dot //
+    if (config.asBoolean("diagrams")) {
+
+      val exec : Option[Path] =
+        if (!config("dotPath").isEmpty) {
+          Some(config("dotPath").toPath)
+        }
+        else {
+          val e = FindExecutable("dot").find(
+            false,
+            true,
+            sake.util.executable.Version.empty
+            )
+
+          if(e != None) {
+            traceInfo("dot executable found!")
+            Some(e.get.path)
+          }
+          else {
+            traceWarning("diagram construction requested, but the program 'dot' could not be found. Either install the program to the host computer, or provide a path using the switch -dotPath")
+            None
+          }
+        }
+
+      if (exec != None) {
+        b +=  "-diagrams"
+        b += "-diagrams-dot-path"
+        b += exec.get.toString
+        b += "-diagrams-dot-restart"
+        b += config("dotRestarts")
+        b += "-diagrams-dot-timeout"
+        b += config("dotTimeout")
+        b += "-diagrams-max-classes"
+        b += config("dotMaxClasses")
+        b += "-diagrams-max-implicits"
+        b += config("dotMaxImplicits")
+      }
+
+    }
+
     b
   }
 
