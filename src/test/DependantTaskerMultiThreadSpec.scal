@@ -1,3 +1,5 @@
+package sake
+
 import org.scalatest._
 
 import trowel._

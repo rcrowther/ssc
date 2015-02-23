@@ -54,8 +54,8 @@ object CLSchema {
     "-libDir" -> CLSwitchOption("paths of the library directories", Seq("lib","Lib"), true, 32),
     "-scalaSrcDir" -> CLSwitchOption("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), true, 32),
     "-javaSrcDir" -> CLSwitchOption("path to Java source files", Seq("src/main/java","src/java"), true, 32),
-    "-testDir" -> CLSwitchOption("path to test directory", Seq("src/test", "test"), true, 32),
-
+    "-scalaTestDir" -> CLSwitchOption("path to Scala test files", Seq("src/test/scala", "src/test", "test"), true, 32),
+    "-javaTestDir" -> CLSwitchOption("path to Java test files", Seq("src/test/java"), true, 32),
 
     // scalac (compile) options //
     "-optimise" -> ("faster bytecode by code analysis", "false"),
@@ -146,6 +146,15 @@ object CLSchema {
       //"-noGuess" -> ("do not try to guess packaging", "false")
   )
 
+  private val scalaTestSwitches = Map[String, CLSwitchOption](
+    "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", "", false, 1),
+    "-to" -> ("where output goes. One of 'gui', 'out', 'err' (default: out)", "", false, 1),
+    "-suite" -> ("specify a suite to run", "", false, 1),
+    "-suiteFrag" -> ("a fragment of path used to find a set of suites", "", false, 1),
+    "-name" -> (" specify a test to run", "", false, 1),
+    "-nameFrag" -> ("a fragment of name used to find a set of tests", "", false, 1)
+
+  )
 
   private val jarSwitches = Map[String, CLSwitchOption](
     "-classpaths" -> ("add classpaths to the manifest", "", true, 64),
@@ -187,6 +196,7 @@ object CLSchema {
     // Full cleanup
     "clean" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     "compile" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
+    "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
@@ -216,10 +226,11 @@ object CLSchema {
     "introspect" -> "output information on classes",
     "repl" -> "start the repl",
     // Empty compiles
-    "clear" -> "remove all compile material",
+    "clear" -> "empty the build directory (deletes compiled files)",
     // Full cleanup
-    "clean" -> "remove all traces of SSC, except build.ssc files",
+    "clean" -> "remove SSC material, except build.ssc and .jar files",
     "compile" -> "run the scala compiler, scalac",
+    "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",
     "doc" -> "run the scala documentation tool, scaladoc",
     "jar" -> "make a jar from compiled files (use -mainClass to create an executable)",

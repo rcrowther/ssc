@@ -1,9 +1,11 @@
 == TODO
 And debug compiles?
 
-Guess package names for 'run'.
+Don't just do populated, make sure an incremental compile can not be performed.
 
-Printout versioning?
+bubble. Because I'm bored.
+
+Guess package names for 'run'.
 
 grep and srcClean would be nice
 
@@ -13,7 +15,6 @@ Get verbose handling.
 
 Fix test folders!
 
-Threads
 Script runner and ssc build
 catch errors
 
@@ -32,7 +33,7 @@ protect against pre/post slashes in user-configured paths?
 
 
 == Done
-"Done" is abandoned here as have a basic compile/install loop
+"Done" is abandoned here as have a basic compile/install loop. Gone GitHub.
 Really horrible undocumented rendering from processes , now has line ends at least.
 Fixed nasty bug causing scaladoc fail and spew.
 Nasty parser bug fixed (empty Booleans)

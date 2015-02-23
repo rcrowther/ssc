@@ -13,11 +13,11 @@ bad
 - *Not for Windows*!
 - only works from commandline
 - not properly built or buildable
-- no JLine means no fsc
+- no JLine means no FSC
 - poorly finished
 
 good
-- Java half-installable
+- Java half/full-installable
 - makes documentation out of broken code
 - works on many folder structures, can be asked to work on any
 - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
@@ -56,10 +56,13 @@ Now put a Scala file in there. Or two. Or a bit of a Scala project. Try,
 
 ssc
 
-If SSC recognises anything in the folder, it will try to produce documentation. By default, it will try to,
+If SSC recognises anything in the folder, it will try to produce documentation. By default, it will,
 
-- Look in several likely places, 
+- Look in several likely places for source, 
 such as src/main/scala, and the top folder 
+- Look for likely library folders 
+and include the contents
+- Make any necessary folders
 - Produce documentation whatever the broken state of the code.
 
 
@@ -76,9 +79,9 @@ Or look at the source code for the class `Configuration`, which is definitive.
 === Commandline
 Any of these options can be used in a build.ssc file.
 
-SSC is a real commandline tool, so it prints nothing but errors. So a useful commandline option,
+SSC is a commandline tool, so it prints nothing but errors. A useful commandline option,
 
-ssc -verbose
+ssc -verbose someTask
 
 See all the options,
 
@@ -92,7 +95,7 @@ ssc -meter buzz <someTask>
 
 Waiting for Scala on my computers is real dull. This cheers me up.
 
-I havn't decided which to keep yet. Best say, "subject to alteration".
+I havn't decided which options to keep yet. Some don't work. Best say, "subject to alteration".
 
 
 === Libraries
@@ -100,7 +103,8 @@ One bad start is lost dependancies for the code. By default, SSC looks in `lib/`
 
 libFiles = /path/to/my/library
 
-== Diagrams
+== Extras
+=== Diagrams
 Like the fancy diagrams in online scaladoc? You need two items,
 
 ~ A fairly hefty computer or small codebase
@@ -108,21 +112,35 @@ Not for nothing does diagram production come with options like 'timeout' and 're
 ~ The program 'dot'
 'dot' is confusing. 'dot' is a graph description language which comes as part of the 'graphviz' package. As do several other programs. And the program which writes 'dot' files, 'dot', can also visualize the files. But so can others.
 
-For Debian-based system, do this,
+For a Debian-based system, do this,
 
-install the general 'graphviz' package on the computer
+~ install the general 'graphviz' package on the computer
 ...with apt-get/synaptic, whatever. Old versions seem to be ok.
 
-Run ssc
-On an installed system, navigate to the top folder to be documented, ten,
+~ Run ssc
+On an installed system, navigate to the top folder to be documented, then,
 
 ssc -diagrams -verbose -meter buzz doc
 
-A meter will help pass the time...
+Meters will help pass the time...
 
-On packaged Linux systems, ssc should find everything ok. There are options for customizing, of course.
+On packaged Linux systems, ssc should find everything ok. In ssc there are a few options for customizing production and output, of course.
 
- https://en.wikipedia.org/wiki/Graphviz
+https://en.wikipedia.org/wiki/Graphviz
+
+
+=== Other commands
+With the same intention of explaining what is going on, try this command,
+
+ssc -classnames <some-package-qualified-classnames> introspect
+
+it runs 'scalap' on a class.
+
+And this command,
+
+ssc -classnames <some-package-qualified-classnames> bytecode
+
+will deliver the guts of the JVM.
 
 
 === build.ssc

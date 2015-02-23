@@ -17,28 +17,28 @@ class ParseSpec extends FunSpec {
     "libFolders" -> "lib"
   )
 
-  val p =  new ParseInit( data, true, true)
+  val p =  new ParseIni( data, true, true)
 
   describe("A Parser"){
 
     it("should output a message for unknown keys") {
-      p.parse(defaults.keys.toSeq)
+      p.parse()
     }
 
-    it("should return a Map[String, Seq[String]]") {
-      assert(p.parse(defaults.keys.toSeq).getClass === Map("" -> Seq("")).getClass)
+    it("should return a  Map[String, Map[String, Seq[String]]] (ConfigMap)") {
+      assert(p.parse().getClass === ConfigMap("" -> Map("" -> Seq(""))).getClass)
     }
 
     it("should lack refused keys") {
-      assert(p.parse(defaults.keys.toSeq).contains("blurt") === false)
+      assert(p.parse().contains("blurt") === false)
     }
 
     it("should have one key") {
-      assert(p.parse(defaults.keys.toSeq).size === 1)
+      assert(p.parse().size === 1)
     }
 
     it("should clean commas") {
-val data = p.parse(defaults.keys.toSeq)
+val data = p.parse()
 info(data("libFolders").toString)
       assert(data("libFolders") === Seq("libby","hole","jars"))
     }

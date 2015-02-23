@@ -36,7 +36,7 @@ class ProgressNotifier(
       "onwards",
       "so it goes",
       "industrious",
-      "the rain",
+      "rain",
       "endless",
       "enough!",
       "waiting",
@@ -63,7 +63,7 @@ class ProgressNotifier(
         // GNU Mint...)
         printer("\033[1K \r")
 
-        currentMessage = messages(random.nextInt(7))
+        currentMessage = messages(random.nextInt(11))
         barLen = currentMessage.size
         printer(currentMessage)
       }
@@ -184,7 +184,7 @@ class ProgressNotifier(
             TimeUnit.MILLISECONDS
           )
 
-        case x => throw new RuntimeException(s"Unknown meter type $x")
+        case _ => "progress"
       }
     }
   }
@@ -200,12 +200,14 @@ class ProgressNotifier(
       meterType match {
         // progress, leave the remnamt and mewline
         case "progress" => printer("\n")
+
         // bounce and buzz, clear and newline
         case "bounce" => printer("\033[1K \n")
 
         case "buzz" => printer("\033[1K \n")
-
-        case x => throw new RuntimeException(s"Unknown meter type $x")
+ 
+        // unknown - progress
+        case _ => printer("\n")
       }
 
       // reshow the cursor
