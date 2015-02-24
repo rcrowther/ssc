@@ -1,6 +1,10 @@
 package sake.support.parser
 
 
+import scala.language.implicitConversions
+
+
+
 /** Value definition for a commandline schema.
   *
   * Implicit definitions make simple maps ok,
@@ -17,6 +21,9 @@ class CLArgOption (
 )
 extends CLOption
 {
+  // make nothing, to print nothing.
+  val parameterDescription = ParameterDescription.empty
+
   override def toString() : String = {
     val b = new StringBuilder("CLArgOption(")
     b append description

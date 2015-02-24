@@ -9,7 +9,7 @@ package sake.support.parser
 trait CLOption
 {
   def description: String
-
+  def parameterDescription: ParameterDescription
 }
 
 object CLOption {

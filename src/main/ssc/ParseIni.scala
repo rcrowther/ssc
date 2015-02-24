@@ -15,7 +15,7 @@ import scala.util.matching.Regex
 class ParseIni(
   data: Traversable[String],
   val verbose: Boolean,
-  val inColor: Boolean
+  val noColor: Boolean
 )
     extends sake.Trace
 {

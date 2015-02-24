@@ -1,21 +1,22 @@
 package sake
 
 /** Print to stdout, formatted and consistent.
-* 
-* Probably best to keep them central, too. We don't know the stdout implementation.
+  * 
+  * Probably best to keep them central, too. We don't know the stdout implementation.
   */
 trait Trace
 {
   private val sep = System.lineSeparator()
 
-  private val GREEN = "\033[32m"
-  private val CYAN = "\033[36m"
-  private val YELLOW = "\033[33m"
-  private val RED = "\033[31m"
-  private val WHITE = "\033[37m"
-  private val DIMWHITE = "\033[2m" 
-  private val BOLDWHITE = "\033[1m"
-  private val RESET = "\033[0m"
+  private val GREEN = "\u001b[32m"
+  private val CYAN = "\u001b[36m"
+  private val YELLOW = "\u001b[33m"
+  private val RED = "\u001b[31m"
+  private val WHITE = "\u001b[37m"
+  // Well, it's not this...
+  private val DIMWHITE = "\u001b[2m"
+  private val BOLDWHITE = "\u001b[1m"
+  private val RESET = "\u001b[0m"
 
 
   /** Define if verbose prints are to go to the output.
@@ -25,7 +26,7 @@ trait Trace
   /** Print output in colour
     */
   // TODO: Do ANSI codes make a mess in some terminals?
-  protected def inColor: Boolean
+  protected def noColor: Boolean
 
   /* Write output to standard output stream, only if verbose is on.
    *
@@ -42,7 +43,10 @@ trait Trace
    */
   def traceInfo(line: String)
   {
-    if (verbose) trace(GREEN + line + WHITE)
+    if (verbose) {
+      if (noColor) trace(line)
+      else trace(GREEN + line + WHITE)
+    }
   }
 
   /* Write info output to standard output stream.
@@ -51,7 +55,8 @@ trait Trace
    */
   def traceInfoPrint(line: String)
   {
-    print(GREEN + line + WHITE)
+    if (noColor) print(line)
+    else print(GREEN + line + WHITE)
   }
 
   /* Write advice output to standard output stream.
@@ -60,7 +65,10 @@ trait Trace
    */
   def traceAdvice(line: String)
   {
-    if (verbose) trace(CYAN + line + WHITE)
+    if (verbose) {
+      if (noColor) trace(line)
+      else trace(CYAN + line + WHITE)
+    }
   }
 
   /* Write warning output to standard output stream.
@@ -69,7 +77,10 @@ trait Trace
    */
   def traceWarning(line: String)
   {
-    if (verbose) trace(YELLOW + line + WHITE)
+    if (verbose) {
+      if (noColor) trace("** Warning ** " + line)
+      else trace(YELLOW + line + WHITE)
+    }
   }
 
   /* Write error output to standard output stream.
@@ -78,7 +89,8 @@ trait Trace
    */
   def traceError(line: String)
   {
-    trace(RED + "**Error**" + WHITE + line )
+    if (noColor) trace("** Error ** " + line)
+    else trace(RED + "** Error ** " + WHITE + line)
   }
 
   /* Write output to standard output stream

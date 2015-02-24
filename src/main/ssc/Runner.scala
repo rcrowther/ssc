@@ -14,7 +14,7 @@ object Runner
     extends sake.Trace
     with sake.support.parser.CLParser
 {
-  val inColor: Boolean = true
+  val noColor: Boolean = false
   var verbose: Boolean = true
 
 
@@ -333,7 +333,7 @@ object Runner
       // Parse the input args.
       // The result is validated against the commandline options structures.
       //TODO: This would only be done once, at top, but maybe passed through.
-      val clParser = new ParseCommandLine(verbose, inColor)
+      val clParser = new ParseCommandLine(verbose, noColor)
       val argsO: Option[(String, ConfigGroup)] = clParser.parse(inputArgs)
       //println(s"argsO:\n $argsO")
 

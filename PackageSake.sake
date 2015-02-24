@@ -33,10 +33,9 @@ object PackageSake
   override protected val appName = "packagesake"
   override val defaultTaskRoute = "show"
 
-  val srcPathSake = cwd.resolve("src/sake")
-  val srcPathSSC = cwd.resolve("src/ssc")
-  val buildPath = cwd.resolve("build")
-  val buildPath2 = cwd.resolve("build2")
+  val srcPathSake = cwd.resolve("src/main/sake")
+  val srcPathSSC = cwd.resolve("src/main/ssc")
+  val buildPath = cwd.resolve("build/main/scala")
   //////////////////////////////////
 
   def cleanJarTemps() {
@@ -67,7 +66,7 @@ object PackageSake
   }
 
   task("installable", after("makeLibraryJar")) {
-
+    traceInfo("makeFolders...")
     val rootFolderName = "sake-" + version
     val binPath = cwd.resolve(rootFolderName + "/bin")
     val libPath = cwd.resolve(rootFolderName + "/lib")

@@ -1,12 +1,14 @@
 package sake.support.parser
 
+
+
 trait Fixtures
 {
 
   val CLSwitchSchema  = Map[String, CLSwitchOption](
-    "-featureWarnings" -> ("Turn features on", "false"),
-    "-srcDir" -> ("List of files to be processed", "", true, 64),
-    "-docTitle" -> ("Title of the document", "Title", false, 1)
+    "-featureWarnings" -> "Turn features on",
+    "-srcDir" -> ("List of files to be processed", "", ParameterDescription.files, true, 64),
+    "-docTitle" -> ("Title of the document", "Title",  ParameterDescription.text, false, 1)
   )
 
   val CLSwitchesOk = Seq[String](

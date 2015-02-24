@@ -1,5 +1,8 @@
 package sake
 
+import scala.language.implicitConversions
+
+
 class Route(val v: String) extends AnyRef
 {
 

@@ -61,7 +61,7 @@ class ProgressNotifier(
         // erase backwards then reset cursor to start (erase is
         // supposed to move the cursor on some terminals, but not my
         // GNU Mint...)
-        printer("\033[1K \r")
+        printer("\u001b[1K \r")
 
         currentMessage = messages(random.nextInt(11))
         barLen = currentMessage.size
@@ -98,7 +98,7 @@ class ProgressNotifier(
       else {
         // erase backwards then reset cursor to start (erase is supposed
         // to move the cursor on some terminals, but not my GNU Mint...)
-        printer("\033[1K \r")
+        printer("\u001b[1K \r")
 
         moveDelay = random.nextInt(9)
         pos = random.nextInt(maxLength)
@@ -156,7 +156,7 @@ class ProgressNotifier(
     else {
 
       // hide the cursor
-      printer("\033[?25l")
+      printer("\u001b[?25l")
 
       meterType match {
 
@@ -202,16 +202,16 @@ class ProgressNotifier(
         case "progress" => printer("\n")
 
         // bounce and buzz, clear and newline
-        case "bounce" => printer("\033[1K \n")
+        case "bounce" => printer("\u001b[1K \n")
 
-        case "buzz" => printer("\033[1K \n")
+        case "buzz" => printer("\u001b[1K \n")
  
         // unknown - progress
         case _ => printer("\n")
       }
 
       // reshow the cursor
-      printer("\033[?25h")
+      printer("\u001b[?25h")
     }
   }
 

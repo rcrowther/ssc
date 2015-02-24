@@ -1,6 +1,14 @@
 == TODO
 And debug compiles?
 
+Rebuild PackageSake so it works
+
+Dim the text, somehow.
+
+Select groups in -config.
+
+Why is that not in colour?
+
 Don't just do populated, make sure an incremental compile can not be performed.
 
 bubble. Because I'm bored.

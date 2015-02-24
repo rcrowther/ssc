@@ -30,15 +30,18 @@ class Config(val repr: Map[String, Seq[String]])
   def asBoolean(k: String)
       : Boolean =
   {
-   // if (repr(k).isEmpty) true
-   // else {
+    if (repr(k).isEmpty) {
+println(s"Warning** Empty config: key $k")
+true
+}
+    else {
     val v = repr(k)(0)
     if (v == "true") true
     else {
       if(v == "false") false
       else throw new Exception(s"Key $k with value $v can not be decoded as Boolean")
     }
-//}
+}
   }
 
   def asInt(k: String)

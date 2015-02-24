@@ -18,7 +18,7 @@ class CLParserSpec
         extends CLParser
         with sake.Trace
     {
-      protected def inColor: Boolean = true
+      protected def noColor: Boolean = true
       protected def verbose: Boolean = true
     }
 

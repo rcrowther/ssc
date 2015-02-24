@@ -6,6 +6,9 @@ import java.io.File
 import java.nio.file.{Paths, Path, Files}
 import sys.process._
 
+import scala.language.postfixOps
+
+
 /** Provides shell utilities.
 */
 trait Shell {

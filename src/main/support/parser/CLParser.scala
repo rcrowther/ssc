@@ -412,7 +412,7 @@ trait CLParser
       b ++= "\n"
     }
     schema.map{ case(name, data) =>
-      val label: String = "  " + name
+      val label: String = "  " + name + " " + data.parameterDescription
       val labelPad = " " * (34 - label.size)
       b ++= label
       b ++= labelPad

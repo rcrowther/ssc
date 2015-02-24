@@ -22,7 +22,7 @@ object SakeFileRunner
 {
   //TODO: pass in tasks too
 
-  val inColor: Boolean = true
+  val noColor: Boolean = true
   var verbose: Boolean = true
   
   // This Scala runneer needs both of these

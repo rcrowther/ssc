@@ -5,6 +5,9 @@ import java.io.File
 import java.nio.file.attribute.FileTime
 import sake.support.file.{StringOps, PathOps, FileTimeOps}
 
+import scala.language.implicitConversions
+
+
 /** Helper code for filehandling.
   *
   * These helpers are split into three categories, Dir/Entry (meaning

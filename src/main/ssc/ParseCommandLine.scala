@@ -3,7 +3,7 @@ package ssc
 import sake.support.parser.CLSwitchOption
 
 
-class ParseCommandLine(val verbose: Boolean, val inColor: Boolean)
+class ParseCommandLine(val verbose: Boolean, val noColor: Boolean)
     extends sake.Trace
     with sake.support.parser.CLParser
 {

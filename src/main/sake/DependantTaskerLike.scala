@@ -71,7 +71,7 @@ trait DependantTaskerLike
   
   protected var verbose: Boolean = true
 
-  protected var inColor: Boolean = false
+  protected var noColor: Boolean = false
 
 
   // Thread history

@@ -43,7 +43,7 @@ class Action(
     with Runnable
 {
   // construct Trace abstracts from the incoming config
-  protected val inColor: Boolean = config.asBoolean("inColor")
+  protected val noColor: Boolean = config.asBoolean("noColor")
   protected val verbose: Boolean = config.asBoolean("verbose")
 
 
@@ -949,7 +949,7 @@ class Action(
 
           // Quietly ignore the gui issue
           // ...let people have the commandline history.
-          if(!inColor && config("to") != "gui") {
+          if(noColor && config("to") != "gui") {
             reporter = reporter + "W"
           }
 
