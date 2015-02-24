@@ -46,7 +46,6 @@ class Action(
   protected val noColor: Boolean = config.asBoolean("noColor")
   protected val verbose: Boolean = config.asBoolean("verbose")
 
-
   /** Holds route data for compiling.
     */
   class CompileRoute(
@@ -438,7 +437,7 @@ class Action(
   )
       : Traversable[String] =
   {
-    //traceInfo("using incremental compile")
+    traceInfo("incremental compile...")
     val allCompiledPaths : Traversable[(Path, BasicFileAttributes)] =
       dirEntryPathsAndAttributes(compileRoute.buildPath, ".class")
 
@@ -541,7 +540,7 @@ class Action(
     )
 
     appendCompileOptions(b)
-    //println("scalac line:" + b.result())
+    println("scalac line:" + b.result())
 
     // Maybe incremental compile, maybe full
     val needsCompiling = addSrcPathStrings(
@@ -669,7 +668,7 @@ class Action(
   /** Empties the build dir (so all compiled material).
     */
   def clear() {
-    traceInfo(s"clearing build directory $buildPathBase...")
+    println(s"clearing build directory $buildPathBase...")
     Dir.clear(buildPathBase)
   }
 

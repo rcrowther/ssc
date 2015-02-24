@@ -30,6 +30,11 @@ class Config(val repr: Map[String, Seq[String]])
   def asBoolean(k: String)
       : Boolean =
   {
+    if (!repr.contains(k)) {
+println(s"Warning** Non-existent config: key $k")
+true
+}
+else {
     if (repr(k).isEmpty) {
 println(s"Warning** Empty config: key $k")
 true
@@ -43,6 +48,7 @@ true
     }
 }
   }
+}
 
   def asInt(k: String)
       : Int =

@@ -5,6 +5,8 @@ Rebuild PackageSake so it works
 
 Dim the text, somehow.
 
+*Please* check -noColor
+
 Select groups in -config.
 
 Why is that not in colour?

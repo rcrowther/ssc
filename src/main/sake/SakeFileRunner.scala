@@ -22,7 +22,8 @@ object SakeFileRunner
 {
   //TODO: pass in tasks too
 
-  val noColor: Boolean = true
+  // Set these for Trace, until args are parsed.
+  var noColor: Boolean = false
   var verbose: Boolean = true
   
   // This Scala runneer needs both of these
@@ -52,7 +53,7 @@ object SakeFileRunner
     else new java.io.File(prop).toPath
   }
 
-  val tmpDir = ccd.resolve("tools/tmp")
+  val tmpDir = ccd.resolve("tmp")
 
   /** Finds a class file in the cache, and returns the classname and package path it represents.
     *
@@ -77,7 +78,7 @@ object SakeFileRunner
     // Test for, and if necessary apply, the -verbose option,
     // this applying to the runner too.
     verbose = inputArgs.contains("-verbose")
-
+    noColor = inputArgs.contains("-noColor")
 
     // Filter runner switches
     val (otherArgs, runnerSwitches) = parseAllArgs(
@@ -90,9 +91,9 @@ object SakeFileRunner
         s match {
           case "-cacheClear" =>
             traceInfo("cleaning the cache")
-            //println(ccd.resolve("tools/tmp/sake"))
-            Dir.delete(ccd.resolve("tools/tmp"))
-            Dir.create(ccd.resolve("tools/tmp"))
+            //println(ccd.resolve("tmp/sake"))
+            Dir.delete(ccd.resolve("tmp"))
+            Dir.create(ccd.resolve("tmp"))
 
           case "-cacheList" =>
             traceInfo("cache listing:")
@@ -143,7 +144,7 @@ object SakeFileRunner
           // Destination for compiles
           b += "-d"
           //TODO: why tools?
-          b += ccd.resolve("tools/tmp").toString
+          b += ccd.resolve("tmp").toString
           // Sake on the classpath
           //TODO: This will be in the lib, but not now
           b += "-toolcp"
@@ -197,7 +198,7 @@ object SakeFileRunner
           b += SAKE_HOME
           // Tmp dir on the classpath
           b += "-classpath"
-          b += ccd.resolve("tools/tmp").toString
+          b += ccd.resolve("tmp").toString
           // Add property args
           //b += "-D"
           b += {"-Dsake.runner.home=" + ccd}

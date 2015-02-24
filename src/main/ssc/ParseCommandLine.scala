@@ -3,7 +3,10 @@ package ssc
 import sake.support.parser.CLSwitchOption
 
 
-class ParseCommandLine(val verbose: Boolean, val noColor: Boolean)
+class ParseCommandLine(
+  val verbose: Boolean, 
+  val noColor: Boolean
+  )
     extends sake.Trace
     with sake.support.parser.CLParser
 {
@@ -39,8 +42,6 @@ class ParseCommandLine(val verbose: Boolean, val noColor: Boolean)
       : Option[(String, ConfigGroup)] =
   {
     // Parse the switches
-
-
     val task = inputArgs.last
     val switches = inputArgs.take(inputArgs.size - 1)
 

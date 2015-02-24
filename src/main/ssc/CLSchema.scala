@@ -31,9 +31,9 @@ object CLSchema {
   )
 
   private val outputFormatSwitch = Map[String, CLSwitchOption](
-    "-verbose" -> ("Output messages about what the application is doing", "false"),
-    "-verboseTools" -> ("Output messages from tools such as 'scalac' or 'jar'. Can be very noisy.", "false"),
-    "-noColor" -> ("Output without color codes", "false")
+    "-verbose" -> "Output messages about what the application is doing",
+    "-verboseTools" -> "Output messages from tools such as 'scalac' or 'jar'. Can be very noisy.",
+    "-noColor" -> "Output without color codes"
   )
 
 
@@ -187,10 +187,13 @@ object CLSchema {
     * task. It is the base data from which default config is
     * generated, and also help.
     */
+
+  // NB. 'outputFormatSwitch' should be in every task, as the runner
+  // uses some of the values too, from a quick parse.
   val taskSwitchSeq = Map[String, Seq[Map[String, CLSwitchOption]]](
     "bytecode" -> Seq(bytecodeSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "introspect" -> Seq(introspectSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "repl" ->  Seq.empty,
+    "repl" -> Seq(outputFormatSwitch),
     // Empty compiles
     "clear" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     // Full cleanup

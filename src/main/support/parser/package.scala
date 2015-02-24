@@ -10,6 +10,7 @@ import scala.language.implicitConversions
   * a simple commandline parser.
   */
 package object parser {
+
   implicit def stringToParameterDescription(s: String)
       : ParameterDescription =
     new ParameterDescription(s)

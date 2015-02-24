@@ -14,8 +14,9 @@ object Runner
     extends sake.Trace
     with sake.support.parser.CLParser
 {
-  val noColor: Boolean = false
-  var verbose: Boolean = true
+  // For starters...
+  var noColor: Boolean = false
+  var verbose: Boolean = false
 
 
   val cwd : Path = Paths.get(".").toAbsolutePath().normalize()
@@ -169,7 +170,7 @@ object Runner
     // Parse the lines
     // Makes no difference if a file was found or not, we printed warnings
     // Doesn't verify against any data, just cleans and makes into map.
-    val p = new ParseIni(configLines, true, true)
+    val p = new ParseIni(configLines, verbose, noColor)
     p.parse()
   }
 
@@ -306,9 +307,11 @@ object Runner
     }
     else {
 
-      // Test for, and if necessary apply, the -verbose option,
-      // ...this applying to the runner too.
+      // Test for, and if necessary apply, these options,
+      // ...they apply to the runner too.
+      // They should be in every task config.
       verbose = inputArgs.contains("-verbose")
+      noColor = inputArgs.contains("-noColor")
 
       val defaultConfig =
         if(inputArgs.contains("-mavenStrict")) {

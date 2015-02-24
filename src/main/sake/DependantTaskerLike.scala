@@ -69,8 +69,22 @@ trait DependantTaskerLike
   // The output stream handler.
   protected var opts = VokeOptions.empty
   
+  //Set these partially. vars, so can be modified by incoming args.
+
+  /** Make reporting verbose.
+    *
+    * This affects the base actions, error handling etc. in a Sake.
+    * default = true. It could be included as a commandline (the
+    * runner uses it, and it will be passed through?)
+    */
   protected var verbose: Boolean = true
 
+  /** Sake reports without color codes.
+    *
+    * This affects the base actions, error handling etc. in a Sake.
+    * default = true. It could be included as a commandline (the
+    * runner uses it, and it will be passed through?)
+    */
   protected var noColor: Boolean = false
 
 
