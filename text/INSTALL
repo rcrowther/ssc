@@ -7,14 +7,15 @@ For Java, OpenJDK is fine, and can be installed by package. Or download an Oracl
  
 Right, the main event. Download Sake/ssc, and navigate a terminal into the top folder. Then,
 
-scalac @scalacArgs
+scalac -verbose @scalacArgs
 
 That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named 'sake'.
 
 Then make executable .jar files from the code,
 
-scala -verbose -toolcp sake -Dsake.runner.home= sake.PackageSake installable
-scala -verbose -classpath build -Dsake.runner.home= sake.PackageSake installable
+mkdir build/main
+mkdir build/main/scala
+scala -verbose -toolcp build/main/scala -Dsake.runner.home= sake.PackageSake installable
 
 
 If all runs ok, a folder called sake-<some.version.name> should appear inside the folder. It has a /bin and a /lib in it. You can half-install it.

@@ -71,13 +71,14 @@ object PackageSake
     val binPath = cwd.resolve(rootFolderName + "/bin")
     val libPath = cwd.resolve(rootFolderName + "/lib")
     val docPath = cwd.resolve(rootFolderName + "/doc")
+    val tmpPath = cwd.resolve(rootFolderName + "/tmp")
 
     // Create the folder structure
     Dir.create(cwd.resolve(rootFolderName))
     Dir.create(binPath)
-    Dir.create(cwd.resolve(rootFolderName + "/bin/tmp"))
     Dir.create(libPath)
     Dir.create(docPath)
+    Dir.create(tmpPath)
 
     // Copy in the scripted runner files
     Entry.copy(

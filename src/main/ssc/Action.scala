@@ -540,7 +540,7 @@ class Action(
     )
 
     appendCompileOptions(b)
-    println("scalac line:" + b.result())
+    //println("scalac line:" + b.result())
 
     // Maybe incremental compile, maybe full
     val needsCompiling = addSrcPathStrings(
@@ -668,7 +668,7 @@ class Action(
   /** Empties the build dir (so all compiled material).
     */
   def clear() {
-    println(s"clearing build directory $buildPathBase...")
+    traceInfo(s"clearing build directory $buildPathBase...")
     Dir.clear(buildPathBase)
   }
 
@@ -980,7 +980,7 @@ class Action(
           val (retCode, stdErr, stdOut) = shCatch (b.result())
           trace(stdErr)
           trace(stdOut)
-          println(s"scalatest line: ${b.result()}")
+          //println(s"scalatest line: ${b.result()}")
           if (retCode != 0) {
             traceError("errors from ScalaTest?")
           }

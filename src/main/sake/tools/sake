@@ -36,6 +36,10 @@ SAKE_HOME=""
 # override here.
 #SAKELIB=""
 
+## Override the positon of the Sake tmp file
+# The default position is next to the script itself.
+# Which will be fine for most situations.
+#SAKETMP=""
 
 ## The class to execute in Scala code
 SCALA_EXECUTABLE="sake.SakeFileRunner"
@@ -319,6 +323,7 @@ execCommand \
     -Djava.home="$JAVA_HOME" \
     -Dscala.home="$SCALA_HOME" \
     -Dsake.home="$SAKELIB" \
+    -Dsake.runner.tmp="$SAKETMP" \
     $OVERRIDE_USEJAVACP \
     "$EMACS_OPT" \
     $WINDOWS_OPT \
