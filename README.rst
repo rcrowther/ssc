@@ -42,7 +42,7 @@ Personally, I want my documentation right there. Putting the 'I' in ``ant``, ``a
 
 
 .. figure:: master/text/Screenshot.jpg
-     width : 300px
+     :width : 300px
 
     `ssc looks at itself`
 
