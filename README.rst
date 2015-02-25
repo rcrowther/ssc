@@ -95,6 +95,7 @@ If Scala and Java are fully installed, ``ssc`` may work now. However, most Java 
 The launching script has been made to make this easy. Goto `bin/ssc`. At the top are a few annotated variables, notably,
 
 JAVA_HOME=""
+
 SCALA_HOME=""
 
 In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. It can be pointed at any other Java `/bin` on the computer, though. For example, you may have a very up-to-date Java to replace packaging, or a Java inside an IDE like Eclipse. Point JAVA_HOME at the `/bin` folder.
