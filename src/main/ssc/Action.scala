@@ -77,7 +77,7 @@ class Action(
   ///////////
   // Utils //
   ///////////
- 
+  
   private def buildPathBase : Path = cwd.resolve(config("buildDir"))
   private def buildPathMain : Path = buildPathBase.resolve("main/")
 
@@ -187,23 +187,6 @@ class Action(
       Some(pathStr.toPath)
     }
   }
-
-  /*
-   private def quote(b: StringBuilder, str: String)
-   : StringBuilder =
-   {
-   b += '"'
-   b ++= str
-   b += '"'
-   b
-   }
-
-   private def quote(str: String)
-   : String =
-   {
-   '"' + str + '"'
-   }
-   */
 
 
   /////////////////////
@@ -583,7 +566,14 @@ class Action(
   // Control //
   /////////////
 
-  def assertCompile(
+  /** Compile if no classes exist
+    *
+    * Has a test before `assertCompile`, to see if compiling is
+    * necessary. Useful for commands where an up-to-date compile is
+    * not strictly necessary, and may be unintended and tedious
+    * e.g. 'introspect', 'bytecode'.
+    */
+  def compileIfNotPopulated(
     requester: String,
     compileRoute: CompileRoute
   )
@@ -594,16 +584,29 @@ class Action(
       true
     }
     else {
-      if (compileRoute.srcPath == None) {
-        // TODO: needs to work for  scala/java/test etc.
-        val configPaths = compileRoute.srcConfig.mkString(", ")
-        traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: $configPaths")
-        false
-      }
-      else {
-        traceInfo(s"$requester has no classes to work from, is forcing compile...")
-        doScalaCompile(compileRoute)
-      }
+      assertCompile(requester,compileRoute)
+    }
+  }
+
+  /** Ensures an up-to-date compile.
+    *
+    * Compiles in the way configuration requests. Used where compiles
+    * must match source e.g. 'jar', 'scalaTest'.
+    */
+  def assertCompile(
+    requester: String,
+    compileRoute: CompileRoute
+  )
+      : Boolean =
+  {
+    if (compileRoute.srcPath == None) {
+      val configPaths = compileRoute.srcConfig.mkString(", ")
+      traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: $configPaths")
+      false
+    }
+    else {
+      traceInfo(s"$requester has no classes to work from, is forcing compile...")
+      doScalaCompile(compileRoute)
     }
   }
 
@@ -773,7 +776,7 @@ class Action(
     val r = scalaRoute
 
     // ensure compiled classes exist
-    if (assertCompile("'introspect' request", r)) {
+    if (compileIfNotPopulated("'introspect' request", r)) {
 
       val cps = config.asSeq("classnames")
 
@@ -820,7 +823,7 @@ class Action(
     val r = scalaRoute
 
     // ensure compiled classes exist
-    if (assertCompile("'bytecode' request", r)) {
+    if (compileIfNotPopulated("'bytecode' request", r)) {
 
       val cps = config.asSeq("classnames")
 
