@@ -41,8 +41,9 @@ If you want a better, more professional tool (it seems most people are ok), in S
 Personally, I want my documentation right there. Putting the 'I' in ``ant``, ``ant`` ain't ma' thing.
 
 
-.. figure:: https://github.com/rcrowther/ssc/tree/master/text/Screenshot.jpg
+.. figure:: https://raw.githubusercontent.com/rcrowther/ssc/master/text/Screenshot.jpg
     :width: 300px
+    :alt: ssc in a terminal
 
     `ssc looks at itself`
 
