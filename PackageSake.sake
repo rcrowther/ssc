@@ -18,7 +18,7 @@ object PackageSake
   /** Set version here
     * With no build tools, version needs to be located someplace.
     */
-  val version = "6.0"
+  val version = ssc.Version.version
 
   protected val customArgs = Map[String, CLArgOption](
     "jar" -> "produce a jar",

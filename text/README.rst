@@ -73,11 +73,11 @@ Move the entire `/bin` folder to wherever you keep Java code, and put them on yo
 
 Find or make `.bashrc`, usually in your home folder.
 
-Add or amend like this (note the lack of spaces. ``bash`` is not fond of spaces), ::
+Add or amend the path to the `/bin` (note the lack of spaces. ``bash`` is not fond of spaces) e.g. ::
 
-    PATH=/home/someUserName/Websites/someSiteFolder:$PATH
+    PATH="$PATH:/home/myName/.../sake-<version>/bin"
 
-and you have one of these at the bottom, ::
+and ensure this line is at the bottom, ::
 
     export path
 
