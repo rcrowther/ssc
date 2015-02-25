@@ -35,3 +35,6 @@ The installed scripts can be pointed at ongoing compiles e.g. the script pointed
 SCALA_JAR="/home/rob/Deployed/scala-2.11.4/lib/scala-library.jar"
 SSC_JAR="/home/rob/Code/trowel/target/scala-2.11/ssc_2.11-0.1.0-SNAPSHOT.jar"
 
+
+== Documentation
+ssc -title "SSC (and Sake)" -rootdoc src/main/rootdoc.txt  -diagrams doc

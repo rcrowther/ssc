@@ -412,6 +412,7 @@ class Action(
     *
     * @param compileRoute a collection of paths to source and
     *  target directories.
+    * @return traversable of all paths, as strings.
     */ 
   // TODO: This seems to pick up stuff scalac doesn't compile, e.g.
   // orphans and configs. Bothered?
@@ -420,7 +421,7 @@ class Action(
   )
       : Traversable[String] =
   {
-    traceInfo("incremental compile...")
+    traceInfoPrint("incremental compile, item count:")
     val allCompiledPaths : Traversable[(Path, BasicFileAttributes)] =
       dirEntryPathsAndAttributes(compileRoute.buildPath, ".class")
 
@@ -444,7 +445,7 @@ class Action(
       compileRoute.srcExtension
     )
 
-    allSrcPaths.filter{ pa =>
+    val ret = allSrcPaths.filter{ pa =>
       // Convert "path/X.scala" (or some other extension) to "path/X.class"
       val fileName = pa._1.getFileName().toString
       val className = fileName.substring(0, fileName.lastIndexOf('.'))
@@ -464,6 +465,9 @@ class Action(
         srcModificationTime > classCreationTime
       }
     }.map(_._1.toString)
+
+   traceInfo(ret.size.toString)
+   ret
   }
 
   /** From a config key, tests if an entry file exists.

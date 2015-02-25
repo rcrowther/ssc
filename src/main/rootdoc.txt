@@ -8,4 +8,4 @@ The [[ssc]] package is a script built in sake. It's for leveraging Scaladoc docu
 
 == Automatic imports ==
 
-There is some information, and some tutorial material, in the `README` files in each package. There is also very comprehensive Scaladoc. Of course.
+There is some information, and some tutorial material, in the `README` files in each package. There is also comprehensive Scaladoc.
