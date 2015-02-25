@@ -42,10 +42,11 @@ Personally, I want my documentation right there. Putting the 'I' in ``ant``, ``a
 
 
 .. figure:: https://raw.githubusercontent.com/rcrowther/ssc/master/text/Screenshot.jpg
-    :width: 300px
+    :width: 300 px
     :alt: ssc in a terminal
+    :align: center
 
-    `ssc looks at itself`
+    ssc looks at itself
 
 How self-regarding.
 
