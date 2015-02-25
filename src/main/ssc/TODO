@@ -1,15 +1,11 @@
 == TODO
 And debug compiles?
 
-Rebuild PackageSake so it works
+Sort our own documentation :)
 
-Dim the text, somehow.
-
-*Please* check -noColor
+Dim the text, somehow
 
 Select groups in -config.
-
-Why is that not in colour?
 
 Don't just do populated, make sure an incremental compile can not be performed.
 
@@ -21,9 +17,7 @@ grep and srcClean would be nice
 
 Stop warning if there's no config file at all.
 
-Get verbose handling.
-
-Fix test folders!
+Fix tests!
 
 Script runner and ssc build
 catch errors
@@ -43,7 +37,7 @@ protect against pre/post slashes in user-configured paths?
 
 
 == Done
-"Done" is abandoned here as have a basic compile/install loop. Gone GitHub.
+*"Done" is abandoned as have a basic compile/install loop* Gone GitHub.
 Really horrible undocumented rendering from processes , now has line ends at least.
 Fixed nasty bug causing scaladoc fail and spew.
 Nasty parser bug fixed (empty Booleans)

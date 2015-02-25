@@ -1,22 +1,25 @@
-
-== SSC Guide
-SSC is a Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
-
-SSC documents Scala code. Which means it leverages scaladoc. Scaladoc is an amazing tool. It's good for programming, yet, maybe one web post on it. I tired of trying to leverage it's abilities, hence, ssc.
-
-SSC runs from the commandline. On that,
+= SSC
 
 
-== The bad and the good
+== The Scala documenter
+``ssc`` is a Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
 
-bad
-- *Not for Windows*!
+``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is an amazing tool. It's good for programming, yet I have only seen one web post on it. I tired of trying to leverage it's abilities, hence, ``ssc``.
+
+``ssc`` runs from the commandline. On that,
+
+
+
+=== The bad and the good
+
+~ bad
+- {i Not for Windows}!
 - only works from commandline
 - not properly built or buildable
 - no JLine means no FSC
 - poorly finished
 
-good
+~ good
 - Java half/full-installable
 - makes documentation out of broken code
 - works on many folder structures, can be asked to work on any
@@ -38,12 +41,12 @@ Personally, I want my documentation right there. Putting the I in ant, ant ain't
 
 
 
-=== Install/half-install to the computer
+== Install/half-install to the computer
 If you got Sake, you got SSC.
 
 
-=== Using SSC
-==== Quick try
+== Using SSC
+=== Quick try
 I hate installation, so if you've go this far, try this.
 
 Make an empty folder. Navigate in with a terminal. Run,
@@ -71,37 +74,35 @@ Type,
 
 ssc -config
 
-to see what can be changed. If it's in the list, it can be on the commandline. Or in a build.ssc file.
+to see what can be changed. If it's in the list, it can be on the commandline. Or in a build.ssc file (see below).
 
 Or look at the source code for the class `Configuration`, which is definitive.
  
 
 === Commandline
-Any of these options can be used in a build.ssc file.
 
-SSC is a commandline tool, so it prints nothing but errors. A useful commandline option,
+SSC is a commandline tool, so prints nothing but errors. A useful commandline option,
 
-ssc -verbose someTask
+    ssc -verbose <task>
 
 See all the options,
 
-ssc -help
+    ssc -help
 
+Force strict `maven` folder usage,
 
+    ssc -maven <task>
 
 And this,
 
-ssc -meter buzz <someTask>
+     ssc -meter buzz <task>
 
 Waiting for Scala on my computers is real dull. This cheers me up.
 
-I havn't decided which options to keep yet. Some don't work. Best say, "subject to alteration".
+And several more. I havn't decided which options to keep yet. Best say, "subject to alteration".
 
 
-=== Libraries
-One bad start is lost dependancies for the code. By default, SSC looks in `lib/` then `Lib/`. Make a build.ssc file to override, e.g. with this line,
 
-libFiles = /path/to/my/library
 
 == Extras
 === Diagrams
@@ -129,25 +130,49 @@ On packaged Linux systems, ssc should find everything ok. In ssc there are a few
 https://en.wikipedia.org/wiki/Graphviz
 
 
+=== build.ssc
+This file can be invented and put into someplace you'd like to override ``ssc`` configuration. 
+
+If ``ssc`` is run in a folder with a `build.ssc` file, it reads the file and adds any configuration it finds there to the default.
+
+Note that commandline options override a `build.ssc` file. So,
+
+   config = default + build.ssc (if it exists) + commandline options
+
+Any configuration option added to this file overrides the default values e.g.
+
+    # Build file for SSC
+
+    # Set project data,
+    # and make always verbose 
+    [project]
+    name = "ssc_app"
+    version = "6.0"
+    verbose = true
+
+    # Insist on diagrams for documentation
+    [doc]
+    diagrams = true
+
+
+`build.ssc` file format is a dead boring .ini file. It can stand you typing with a bandaged hand.
+
+
+
 === Other commands
 With the same intention of explaining what is going on, try this command,
 
 ssc -classnames <some-package-qualified-classnames> introspect
 
-it runs 'scalap' on a class.
+which runs 'scalap' on a class.
 
-And this command,
+This command,
 
 ssc -classnames <some-package-qualified-classnames> bytecode
 
 will deliver the guts of the JVM.
 
 
-=== build.ssc
-This file can be invented and put into someplace you'd like documentation. Any configuration option added to this file overrides the default values.
 
-It's a dead boring .ini file. It can stand you typing with a bandaged hand.
-
-
-=== Finale
+== Finale
 That's it.

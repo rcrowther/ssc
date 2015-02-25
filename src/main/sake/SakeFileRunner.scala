@@ -123,8 +123,7 @@ object SakeFileRunner
             case "-cacheClear" =>
               traceInfo("cleaning the cache")
               //println(ccd.resolve("tmp/sake"))
-              Dir.delete(tmpDir)
-              Dir.create(tmpDir)
+              Dir.clear(tmpDir)
 
             case "-cacheList" =>
               traceInfo("cache listing:")
@@ -256,4 +255,5 @@ object SakeFileRunner
       }
     }
   }
+
 }//SakeFileRunner

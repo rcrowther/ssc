@@ -1,6 +1,6 @@
 Sake (with SSC)
 ---------------
-Will probably run any any post Java 7. Theres nothing special, and no dependancies, unless testing (Scalatest) 
+Will probably run any any post Java 7. Theres nothing special, and no dependancies, unless testing (Scalatest).
 
 
 
@@ -38,3 +38,20 @@ sake -help
 should show a lot, as will scaladoc.
 
 
+
+Useful Note: commandline format
+---------------------------------
+
+SSC commands have this format/usage,
+
+    ssc <switches> <task>
+
+Every modification is a switch, even destinations. To send documentation to different folder (overriding the default and any `build.ssc` modifications),
+
+    ssc -docDir docs/myDifferentlyNamedDocFolder doc
+
+not,
+
+    ssc doc docs/myDifferentlyNamedDocFolder
+
+This explains all usage.

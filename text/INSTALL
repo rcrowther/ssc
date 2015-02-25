@@ -63,7 +63,7 @@ PATH=$PATH:/home/someUserName/Websites/someSiteFolder
 == Restart bash
 source ~/.bashrc
 
-or restart the whole computer, but in the middle of development, that's a right pain.
+or restart the whole computer, but in the middle of development, that's a pain.
 
 
 
@@ -84,5 +84,10 @@ JAVA_HOME="/path/to/my/chosen/jdk"
 
 ...and change the Sake you are using, but most people will not need that.
 
+
+=== Libraries
+One bad start is lost dependencies for the code. By default, SSC looks in `lib/` then `Lib/`. Make a build.ssc file to override, e.g. with this line,
+
+libFiles = /path/to/my/library
 
 
