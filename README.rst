@@ -41,6 +41,13 @@ If you want a better, more professional tool (it seems most people are ok), in S
 Personally, I want my documentation right there. Putting the 'I' in ``ant``, ``ant`` ain't ma' thing.
 
 
+.. figure:: master/text/Screenshot.jpg
+     width : 300px
+
+    `ssc looks at itself`
+
+How self-regarding.
+
 
 Install/half-install to the computer
 ====================================

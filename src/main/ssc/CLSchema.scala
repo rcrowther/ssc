@@ -42,7 +42,22 @@ object CLSchema {
     "-buildDir" -> ("path of the build directory", "build", ParameterDescription.path, false, 1)
   )
 
-  private val compileSwitches = Map[String, CLSwitchOption](
+///////////////////
+// Task switches //
+///////////////////
+  private val findSwitches = Map[String, CLSwitchOption](
+  "-text" -> ("text to seek", "", ParameterDescription.text, false, 1),
+  "-case" -> "text must match case (default: false)"
+  )
+
+  private val sourceSwitches = Map[String, CLSwitchOption](
+    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
+    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1)
+)
+
+  private val compileSwitches = {
+sourceSwitches ++
+  Map[String, CLSwitchOption](
     /** The encoding used by source files
       *
       * Note: Nothing to do with document output.
@@ -52,8 +67,8 @@ object CLSchema {
 
     // Building //
     "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths, false, 1),
-    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
-    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1),
+    //"-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
+    //"-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1),
     "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path, false, 1),
     "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1),
 
@@ -64,7 +79,7 @@ object CLSchema {
     "-deprecation" -> "turn on Scala's deprecation warnings (needs a new compile to report)",
     "-meter"  -> ("show a progressbar, one of 'none', 'progress', 'bounce', 'buzz'. Only visible using the -verbose switch (default: 'progress')", "progress", ParameterDescription.strCode, false, 1)
   )
-
+}
 
   private val docDirSwitch = Map[String, CLSwitchOption](
     // scaladoc options //
@@ -199,6 +214,7 @@ object CLSchema {
     "clear" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     // Full cleanup
     "clean" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
+    "find" ->  Seq(findSwitches, sourceSwitches, buildDirSwitch, outputFormatSwitch),
     "compile" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
@@ -234,6 +250,7 @@ object CLSchema {
     "clear" -> "empty the build directory (deletes compiled files)",
     // Full cleanup
     "clean" -> "remove SSC material, except build.ssc and .jar files",
+    "find" -> "search for text in source files",
     "compile" -> "run the scala compiler, scalac",
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",

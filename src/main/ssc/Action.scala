@@ -33,7 +33,7 @@ import sake.util.executable.FindExecutable
   * @param config a set of values to modify the actions
   *  according to expressed preferences.  
   */
-class Action(
+final class Action(
   val taskName: String,
   val cwd: Path,
   val config: Config
@@ -421,7 +421,7 @@ class Action(
   )
       : Traversable[String] =
   {
-    traceInfoPrint("incremental compile, item count:")
+    traceInfoPrint("incremental compile, file count:")
     val allCompiledPaths : Traversable[(Path, BasicFileAttributes)] =
       dirEntryPathsAndAttributes(compileRoute.buildPath, ".class")
 
@@ -570,7 +570,23 @@ class Action(
   // Control //
   /////////////
 
-  /** Compile if no classes exist
+/** Test if sourcepaths exist on this compile route.
+*/
+  def sourcePathExists(
+    requester: String,
+    compileRoute: CompileRoute
+  )
+  : Boolean =
+  {
+    if (compileRoute.srcPath == None) {
+      val configPaths = compileRoute.srcConfig.mkString(", ")
+      traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: $configPaths")
+      false
+    }
+    else true
+  }
+
+  /** Compiles if no classes exist
     *
     * Has a test before `assertCompile`, to see if compiling is
     * necessary. Useful for commands where an up-to-date compile is
@@ -704,6 +720,130 @@ class Action(
     //..and the build directory
     traceInfo(s"deleting build directory $buildPathBase...")
     Dir.delete(buildPathBase)
+  }
+
+
+  /** Searches for text in the source.
+    */
+  def find() {
+    val cps = config("text")
+
+    if (cps.isEmpty) {
+      traceError("Please add text to a 'find' task. Use switch -text <search text>")
+    }
+    else {
+
+      // Get the basic scala routes
+      val r = scalaRoute
+
+      if(sourcePathExists("'search' request", r)) {
+        traceInfo("searching...")
+
+        val b = Seq.newBuilder[String]
+        //b += "("
+
+        b += "grep"
+
+
+        // recursive (simple)
+        b += "-r"
+
+        // Add line numbering
+        b += "-n"
+
+        if (config.asBoolean("case")) {
+          b += config("-i")
+        }
+
+        b += config("text")
+        b += r.srcPath.get.toString
+        //b += ")"
+        traceInfo(s"line:  ${b.result()}")
+
+        traceInfo("search result:")
+        //shPrint(b.result())
+        val (retCode, stdErr, stdOut) = shCatch (b.result())
+
+        trace(stdErr)
+
+        // A major formatting job...
+
+        // Split the 'grep' lines
+        val lines = stdOut.split("\n")
+
+        // We couldn't/didn't use a subprocess/switch directory
+        // search.
+        // So lets remove items above the search dir, and that part of
+        // the path, too. '/' accounts for slashes in mid-path.
+        val srcPathAsStr = r.srcPath.get.toString + '/'
+        val srcPathAsStrSize = srcPathAsStr.size
+
+
+        val linesFromSrc = lines.collect {
+          case l if(l.startsWith(srcPathAsStr)) => {
+            l.drop(srcPathAsStrSize)
+          }
+        }
+
+
+        // Split at the first and second colons
+        // Return is (path, linenumber, linedetail)
+        val splitLinesFromSrc: Seq[(String, String, String)] = 
+          linesFromSrc.map{ line =>
+            val twinLine = line.splitAt(line.indexOf(':'))
+            // NB: dropping the colon before the number
+            val numDetailLine = twinLine._2.drop(1)
+            val twinLine2 = numDetailLine.splitAt(numDetailLine.indexOf(':'))
+
+            // NB: dropping the colon after the number
+            (twinLine._1, twinLine2._1, twinLine2._2.drop(1))
+          }
+
+
+        // Now spacially format
+        var lastSrcPath = srcPathAsStr
+        val spaciallyFormatted = splitLinesFromSrc.map{ sl =>
+          val path = sl._1
+          // If this path is the same as the last path, drop all path
+          // output and add a little indent for the rest of the line.
+          // If not, add a preceeding newline to open the stanza, a
+          // following newline to the rest of the line, then the
+          // little indent.
+          val newPath =
+            if (path == lastSrcPath) "  "
+            else "\n" + path + "\n  "
+          lastSrcPath = path
+          (newPath, sl._2, sl._3 + "\n")
+        }
+
+        // Add color back, if requested
+        val splitLinesColored =
+          if(!noColor) {
+            spaciallyFormatted.map { sl =>
+              (
+                "\u001b[36m" + sl._1,
+                "\u001b[32;2m" + sl._2 + "\u001b[35m:\u001b[0m",
+                "\u001b[0m" + sl._3
+              )
+            }
+          }
+          else splitLinesFromSrc
+
+        // Gather everything into a string blob
+        val lb = new StringBuilder
+        splitLinesColored.foreach{ sl =>
+          lb ++= sl._1
+          lb ++= sl._2
+          lb ++= sl._3
+        }
+
+        trace(lb.result())
+
+        if (retCode != 0) {
+          traceWarning("run errors")
+        }
+      }
+    }
   }
 
 
@@ -1084,6 +1224,7 @@ class Action(
     taskName match {
       case "clear" => clear()
       case "clean" => clean()
+      case "find" => find()
       case "compile" => compile()
       case "test" => scalaTest()
       case "doc" => doc()

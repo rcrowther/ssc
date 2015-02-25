@@ -1,0 +1,19 @@
+# Test build.ssc for SSC
+# Aggressively bad formatting!
+# = 'build.ssc'
+# Deliberate empty line follows...
+
+[project]
+name = "ssc_app"
+version = "6.0"
+
+  # ...and erratic indenting...
+[compile]
+bluesy = buster
+scalaSrcDir -> "src"
+scalaSrcDir =src
+
+[jar]
+blackout=  8
+
+[fig]
