@@ -65,7 +65,7 @@ Download ``ssc``, and navigate a terminal into the top folder. Then, ::
     mkdir build/main/scala
     scalac -verbose @scalacArgs
 
-That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `sake`.
+That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `build`.
 
 Then make executable .jar files from the code, ::
 
@@ -77,8 +77,6 @@ If all runs ok, a folder called `sake-<some.version.name>` should appear inside 
 Reminder instructions for a half-install
 ----------------------------------------
 *Linux/Unix only*
-
-Move the entire `/bin` folder to wherever you keep Java code, and put them on your computer's path.
 
 Find or make `.bashrc`, usually in your home folder.
 
@@ -99,22 +97,22 @@ or restart the whole computer, but in the middle of development, that's a pain.
 
 Adjust the script
 -----------------
-If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVMs/Scala installations. If development is on `Eclipse`, you have caos, as `Eclipse` will have it's own Versions of Scala, and Scalas and Javas are everywhere.
+If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVM/Scala installations. If development is on `Eclipse`, you have caos, as `Eclipse` will have Scalas and Javas everyplace.
 
-The launching script has been made to make this easy. Goto `bin/ssc`. At the top are a few annotated variables, notably,
+The launching script has been written to make this easy. Goto `bin/ssc`. At the top are a few annotated variables, notably,
 
 JAVA_HOME=""
 
 SCALA_HOME=""
 
-In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. It can be pointed at any other Java `/bin` on the computer, though. For example, you may have a very up-to-date Java, or a Java inside an IDE like Eclipse. Point JAVA_HOME at the `/bin` folder.
+In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. But if you have an up-to-date Java, or a Java inside an IDE like Eclipse, point JAVA_HOME at the `/bin` folder.
 
-The same is true of Scala, and SCALA_HOME. However, Scala is often not fully installed, and SCALA_HOME must be pointed at it's `/bin` folder.
+The same is true of Scala, and SCALA_HOME. A fully installed version should work --- for half-installed versions point SCALA_HOME at Scala's `/bin` folder.
 
 
 Libraries
 ---------
-One bad start is lost dependencies for the code to be documented. ``ssc`` needs to know about libraries the code uses, as it does a kind of compile to make the documentation. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, make a `build.ssc` file (see below) to override, e.g. with this line, ::
+One bad start is lost dependencies for code. ``ssc`` needs to know about libraries the code uses, as ``scaladoc`` does a kind of compile. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
 
     libFiles = /path/to/my/library
 
@@ -135,10 +133,10 @@ Now put a Scala file in there. Or two. Or a bit of a Scala project. Try, ::
 
     ssc
 
-If ``ssc`` recognises anything in the folder, it will try to produce documentation. By default, it will try to,
+If ``ssc`` recognises anything in the folder, it will try to produce documentation. By default, it will,
 
 - Look in several likely places, such as `src/main/scala`, and the top folder 
-- Make any necessary folders
+- Make necessary folders
 - Produce documentation whatever the broken state of the code
 
 
@@ -182,7 +180,7 @@ Commandline format
 
     ssc <switches> <task>
 
-Every modification is a switch, even destinations. To send documentation to different folder (overriding the default and any `build.ssc` modifications), ::
+Every modification is a switch, even destinations. To send documentation to a different folder (overriding the default and any `build.ssc` modifications), ::
 
     ssc -docDir docs/myDifferentlyNamedDocFolder doc
 
@@ -195,9 +193,9 @@ Worth remembering.
 
 build.ssc
 ---------
-This file can be invented and put into someplace you'd like to override ``ssc`` configuration. 
+This file can be invented and put anywhere you'd like to override ``ssc`` configuration. 
 
-If ``ssc`` is run in a folder with a `build.ssc` file, it reads the file and adds any configuration it finds there to the default.
+If ``ssc`` is run in a folder with a `build.ssc` file, it reads the file and adds configuration it finds there to the default.
 
 Note that commandline options override a `build.ssc` file. So, ::
 

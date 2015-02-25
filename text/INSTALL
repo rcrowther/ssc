@@ -11,7 +11,7 @@ mkdir build/main
 mkdir build/main/scala
 scalac -verbose @scalacArgs
 
-That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named 'sake'.
+That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named 'build'.
 
 Then make executable .jar files from the code,
 
