@@ -7,14 +7,14 @@ For Java, OpenJDK is fine, and can be installed by package. Or download an Oracl
  
 Right, the main event. Download Sake/ssc, and navigate a terminal into the top folder. Then,
 
+mkdir build/main
+mkdir build/main/scala
 scalac -verbose @scalacArgs
 
 That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named 'sake'.
 
 Then make executable .jar files from the code,
 
-mkdir build/main
-mkdir build/main/scala
 scala -verbose -toolcp build/main/scala -Dsake.runner.home= sake.PackageSake installable
 
 

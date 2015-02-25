@@ -52,14 +52,14 @@ You need Java (OpenJDK no problem, probably works on any Java7+) and Scala.
 
 Download ``ssc``, and navigate a terminal into the top folder. Then, ::
 
+    mkdir build/main
+    mkdir build/main/scala
     scalac -verbose @scalacArgs
 
-That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `sake`.
+That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `build`.
 
 Then make executable .jar files from the code, ::
 
-    mkdir build/main
-    mkdir build/main/scala
     scala -verbose -toolcp build/main/scala -Dsake.runner.home= sake.PackageSake installable
 
 If all runs ok, a folder called `sake-<some.version.name>` should appear inside the folder. It has a `/bin` and a `/lib` in it. You can half-install it.
