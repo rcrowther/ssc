@@ -98,9 +98,9 @@ JAVA_HOME=""
 
 SCALA_HOME=""
 
-In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. It can be pointed at any other Java `/bin` on the computer, though. For example, you may have a very up-to-date Java to replace packaging, or a Java inside an IDE like Eclipse. Point JAVA_HOME at the `/bin` folder.
+In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. It can be pointed at any other Java `/bin` on the computer, though. For example, you may have a very up-to-date Java, or a Java inside an IDE like Eclipse. Point JAVA_HOME at the `/bin` folder.
 
-The same is true of Scala, and SCALA_HOME. However, t is much more likely that Scala is not fully installed to the computer, and SCALA_HOME must be pointed at it's `/bin` folder.
+The same is true of Scala, and SCALA_HOME. However, Scala is often not fully installed, and SCALA_HOME must be pointed at it's `/bin` folder.
 
 
 Libraries
