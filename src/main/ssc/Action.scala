@@ -778,10 +778,10 @@ class Action(
     // ensure compiled classes exist
     if (compileIfNotPopulated("'introspect' request", r)) {
 
-      val cps = config.asSeq("classnames")
+      val cps = config.asSeq("classes")
 
       if (cps.isEmpty) {
-        traceError("Please add classnames to an 'introspect' task. Use switch -classnames <list of class names>")
+        traceError("Please add classnames to an 'introspect' task. Use switch -classes <list of class names>")
       }
       else {
 
@@ -791,9 +791,12 @@ class Action(
         if (config.asBoolean("private")) {
           b += "-private"
         }
-        // Scalap verbose adds little beyond the titles CLASSPATH
-        // and FILENAME, so use it anyway.
-        b += "-verbose"
+
+        if (config.asBoolean("verboseTools")) {
+          // Scalap verbose adds little beyond the titles CLASSPATH
+          // and FILENAME, but be consistent...
+          b += "-verbose"
+        }
 
         // NB: classpath probe down for Scala and Java files.
         compiledClasspaths.foreach { p =>
@@ -825,10 +828,10 @@ class Action(
     // ensure compiled classes exist
     if (compileIfNotPopulated("'bytecode' request", r)) {
 
-      val cps = config.asSeq("classnames")
+      val cps = config.asSeq("classes")
 
       if (cps.isEmpty) {
-        traceError("Please add classnames to a 'bytecode' task. Use switch -classnames <list of class names>")
+        traceError("Please add classnames to a 'bytecode' task. Use switch -classes <list of class names>")
 
       }
       else {

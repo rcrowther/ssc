@@ -60,9 +60,9 @@ object CLSchema {
     // scalac (compile) options //
     "-optimise" -> "faster bytecode by code analysis",
     "-incremental" -> ("compile only changed files", "true"),
-    "-feature" -> ("turn on Scala's feature warnings (needs new compile to report)"),
-    "-deprecation" -> "turn on Scala's deprecation warnings (needs new compile to report)",
-    "-meter"  -> ("show a progressbar, one of 'none', 'progress' (default), 'bounce', 'buzz', ", "progress", ParameterDescription.strCode, false, 1)
+    "-feature" -> ("turn on Scala's feature warnings (needs a new compile to report)"),
+    "-deprecation" -> "turn on Scala's deprecation warnings (needs a new compile to report)",
+    "-meter"  -> ("show a progressbar, one of 'none', 'progress', 'bounce', 'buzz'. Only visible using the -verbose switch (default: 'progress')", "progress", ParameterDescription.strCode, false, 1)
   )
 
 
@@ -141,10 +141,7 @@ object CLSchema {
   )
 
 
-  private val runSwitches = Map[String, CLSwitchOption](
-    "-class" -> ("specify a class to run", "", ParameterDescription.className, false, 1)
-      //"-noGuess" -> ("do not try to guess packaging", "false")
-  )
+
 
   private val scalaTestSwitches = Map[String, CLSwitchOption](
     "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", "", ParameterDescription.path, false, 1),
@@ -166,7 +163,7 @@ object CLSchema {
 
   private val introspectSwitches = Map[String, CLSwitchOption](
     "-private" -> "print private definitions",
-    "-classnames" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.classNames, true, 64)
+    "-classes" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.classNames, true, 64)
   )
 
 
@@ -177,9 +174,13 @@ object CLSchema {
     "-private" -> ("print private definitions", "false"),
     "-systemInfo" -> ("print paths, dates, sizes, hashcodes", "false"),
     "-classInfo" -> ("print stacksize and arg counts", "false"),
-    "-classnames" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.paths, true, 64)
+    "-classes" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.paths, true, 64)
   )
 
+  private val runSwitches = Map[String, CLSwitchOption](
+    "-class" -> ("specify a class to run", "", ParameterDescription.className, false, 1)
+      //"-noGuess" -> ("do not try to guess packaging", "false")
+  )
 
   /** All switches for a task in a seq of switch groups.
     *
@@ -202,8 +203,9 @@ object CLSchema {
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "reload" -> Seq(outputFormatSwitch)
+    "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch)
+    // TOCONSIDER: Will be enabled sometime, likely
+    //"reload" -> Seq(outputFormatSwitch)
   )
 
 
@@ -227,7 +229,7 @@ object CLSchema {
   val tasks = Map[String, CLArgOption](
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",
     "introspect" -> "output information on classes",
-    "repl" -> "start the repl",
+    "repl" -> "start a repl (not enabled!)",
     // Empty compiles
     "clear" -> "empty the build directory (deletes compiled files)",
     // Full cleanup
@@ -236,8 +238,9 @@ object CLSchema {
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",
     "doc" -> "run the scala documentation tool, scaladoc",
-    "jar" -> "make a jar from compiled files (use -mainClass to create an executable)",
-    "reload" -> "reload the build definition - changes the default config."
+    "jar" -> "make a jar from compiled files (use -mainClass to create an executable)"
+    // TOCONSIDER: Will be enabled sometime, likely
+    //"reload" -> "reload the build definition - changes the default config"
   )
 
 }//CLSchema
