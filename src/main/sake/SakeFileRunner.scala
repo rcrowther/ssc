@@ -122,7 +122,7 @@ object SakeFileRunner
           s match {
             case "-cacheClear" =>
               traceInfo("cleaning the cache")
-              //println(ccd.resolve("tmp/sake"))
+              //println(tmpDir)
               Dir.clear(tmpDir)
 
             case "-cacheList" =>

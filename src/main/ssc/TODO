@@ -1,7 +1,7 @@
 == TODO
 And debug compiles?
 
-multiple streams of src info - cache, please.
+find can do more than it says...
 
 
 Scalatest gets lost in this circumstance?
@@ -16,6 +16,19 @@ Yes it does? It works if the test is repeated, but new material fools it?
 Test seems to have problems incrementally recompiling? It's the incremental
 test compile which is failing to find it's old gear?
 
+"ssc -case -text CLPa -verbose find" is throwing error, ""-i" not found"
+Also, when nothing found, getting error back?
+
+Fail behaviour of tasks:
+[done] find
+[exception] run
+[] bytecode
+[] introspect
+[defended] tree
+[] compile
+[] test
+[] doc
+[] jar
 
 Dim the text, somehow
 
@@ -25,7 +38,7 @@ bubble. Because I'm bored.
 
 Guess package names for 'run'.
 
-grep and srcClean would be nice
+srcClean would be nice
 
 Stop warning if there's no config file at all.
 
@@ -46,7 +59,7 @@ when running, hunt for packages?
 
 protect against pre/post slashes in user-configured paths?
 
-
+sake should have a nice message if there is no temp dir?
 
 == Done
 *"Done" is abandoned as have a basic compile/install loop* Gone GitHub.

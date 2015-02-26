@@ -94,16 +94,16 @@ final class Action(
   // Tests are separated first, so jar and other collective runners
   // can include java/scala compiled gear by referencing
   // mainSections...
-  private def scalaRoute: CompileRoute = new CompileRoute(
+  private val scalaRoute: CompileRoute = new CompileRoute(
     buildPathBase.resolve("main/scala/"),
     dirFind("scalaSrcDir", config.asSeq("scalaSrcDir")),
     ".scala",
     config.asSeq("scalaSrcDir")
   )
 
-  private def scalaTestRoute: CompileRoute = new CompileRoute(
+  private val scalaTestRoute: CompileRoute = new CompileRoute(
     buildPathBase.resolve("test/scala/"),
-    dirFind("scalaSrcDir", config.asSeq("scalaTestDir")),
+    dirFind("scalaTestRoute", config.asSeq("scalaTestDir")),
     ".scala",
     config.asSeq("scalaTestDir")
   )
@@ -478,7 +478,7 @@ final class Action(
   )
       : Traversable[String] =
   {
-    traceInfoPrint("incremental compile, file count:")
+    //traceInfoPrint("incremental compile, file count:")
     val allCompiledPaths : Traversable[(Path, BasicFileAttributes)] =
       dirEntryPathsAndAttributes(compileRoute.buildPath, ".class")
 
@@ -494,7 +494,7 @@ final class Action(
         b += (className -> creationTime)
       }
     }
-    val allCompiledPathsMap : Map[String, java.nio.file.attribute.FileTime]  = b.result()
+    val allCompiledPathsMap : Map[String, java.nio.file.attribute.FileTime] = b.result()
     //println(s"allCompiledPathsMap: $allCompiledPathsMap")
     //println
     val allSrcPaths = dirEntryPathsAndAttributes(
@@ -523,7 +523,8 @@ final class Action(
       }
     }.map(_._1.toString)
 
-    traceInfo(ret.size.toString)
+    //traceInfo(ret.size.toString)
+    traceInfo("incremental compile, file count:" + ret.size.toString)
     ret
   }
 
@@ -818,8 +819,8 @@ final class Action(
           // Add line numbering
           b += "-n"
 
-          if (config.asBoolean("case")) {
-            b += config("-i")
+          if (!config.asBoolean("case")) {
+            b += "-i"
           }
 
           b += config("text")
@@ -830,84 +831,95 @@ final class Action(
           traceInfo("search result:")
           //shPrint(b.result())
           val (retCode, stdErr, stdOut) = shCatch (b.result())
-
-          trace(stdErr)
-
-          // A major formatting job...
-
-          // Split the 'grep' lines
-          val lines = stdOut.split("\n")
-
-          // We couldn't/didn't use a subprocess/switch directory
-          // search.
-          // So lets remove items above the search dir, and that part of
-          // the path, too. '/' accounts for slashes in mid-path.
-          val srcPathAsStr = r.srcPath.get.toString + '/'
-          val srcPathAsStrSize = srcPathAsStr.size
-
-
-          val linesFromSrc = lines.collect {
-            case l if(l.startsWith(srcPathAsStr)) => {
-              l.drop(srcPathAsStrSize)
-            }
-          }
-
-
-          // Split at the first and second colons
-          // Return is (path, linenumber, linedetail)
-          val splitLinesFromSrc: Seq[(String, String, String)] =
-            linesFromSrc.map{ line =>
-              val twinLine = line.splitAt(line.indexOf(':'))
-              // NB: dropping the colon before the number
-              val numDetailLine = twinLine._2.drop(1)
-              val twinLine2 = numDetailLine.splitAt(numDetailLine.indexOf(':'))
-
-              // NB: dropping the colon after the number
-              (twinLine._1, twinLine2._1, twinLine2._2.drop(1))
-            }
-
-
-          // Now spacially format
-          var lastSrcPath = srcPathAsStr
-          val spaciallyFormatted = splitLinesFromSrc.map{ sl =>
-            val path = sl._1
-            // If this path is the same as the last path, drop all path
-            // output and add a little indent for the rest of the line.
-            // If not, add a preceeding newline to open the stanza, a
-            // following newline to the rest of the line, then the
-            // little indent.
-            val newPath =
-              if (path == lastSrcPath) "  "
-              else "\n" + path + "\n  "
-            lastSrcPath = path
-            (newPath, sl._2, sl._3 + "\n")
-          }
-
-          // Add color back, if requested
-          val splitLinesColored =
-            if(!noColor) {
-              spaciallyFormatted.map { sl =>
-                (
-                  "\u001b[36m" + sl._1,
-                  "\u001b[32;2m" + sl._2 + "\u001b[35m:\u001b[0m",
-                  "\u001b[0m" + sl._3
-                )
+          if (retCode != 0) {
+            // Exit results are always a lottery
+            // Until someone digs in source, assuming '1' is 'nothing found'
+            retCode match {
+              case 1 => {
+                traceInfo("  ** no results **")
+              }
+              case _ => {
+                traceWarning("run errors")
               }
             }
-            else splitLinesFromSrc
-
-          // Gather everything into a string blob
-          val lb = new StringBuilder
-          splitLinesColored.foreach{ sl =>
-            lb ++= sl._1
-            lb ++= sl._2
-            lb ++= sl._3
+            trace(stdErr)
           }
+          else {
 
-          trace(lb.result())
+            // A major formatting job...
 
-          if (retCode != 0) {
-            traceWarning("run errors")
+            // Split the 'grep' lines
+            val lines = stdOut.split("\n")
+
+            // We couldn't/didn't use a subprocess/switch directory
+            // search.
+            // So lets remove items above the search dir, and that part of
+            // the path, too. '/' accounts for slashes in mid-path.
+            val srcPathAsStr = r.srcPath.get.toString + '/'
+            val srcPathAsStrSize = srcPathAsStr.size
+
+
+            val linesFromSrc = lines.collect {
+              case l if(l.startsWith(srcPathAsStr)) => {
+                l.drop(srcPathAsStrSize)
+              }
+            }
+
+
+            // Split at the first and second colons
+            // Return is (path, linenumber, linedetail)
+            val splitLinesFromSrc: Seq[(String, String, String)] =
+              linesFromSrc.map{ line =>
+                val twinLine = line.splitAt(line.indexOf(':'))
+                // NB: dropping the colon before the number
+                val numDetailLine = twinLine._2.drop(1)
+                val twinLine2 = numDetailLine.splitAt(numDetailLine.indexOf(':'))
+
+                // NB: dropping the colon after the number
+                (twinLine._1, twinLine2._1, twinLine2._2.drop(1))
+              }
+
+
+            // Now spacially format
+            var lastSrcPath = srcPathAsStr
+            val spaciallyFormatted = splitLinesFromSrc.map{ sl =>
+              val path = sl._1
+              // If this path is the same as the last path, drop all path
+              // output and add a little indent for the rest of the line.
+              // If not, add a preceeding newline to open the stanza, a
+              // following newline to the rest of the line, then the
+              // little indent.
+              val newPath =
+                if (path == lastSrcPath) "  "
+                else "\n" + path + "\n  "
+              lastSrcPath = path
+              (newPath, sl._2, sl._3 + "\n")
+            }
+
+            // Add color back, if requested
+            val splitLinesColored =
+              if(!noColor) {
+                spaciallyFormatted.map { sl =>
+                  (
+                    "\u001b[36m" + sl._1,
+                    "\u001b[32;2m" + sl._2 + "\u001b[35m:\u001b[0m",
+                    "\u001b[0m" + sl._3
+                  )
+                }
+              }
+              else splitLinesFromSrc
+
+            // Gather everything into a string blob
+            val lb = new StringBuilder
+            splitLinesColored.foreach{ sl =>
+              lb ++= sl._1
+              lb ++= sl._2
+              lb ++= sl._3
+            }
+
+            trace(lb.result())
+
+
           }
         }
       }
@@ -988,16 +1000,10 @@ final class Action(
 
   def runK()
   {
-    // Get the basic scala routes
     //NB. This only can use scala, so simpler.
     //TODO: Will it run java classes?
-    val r = scalaRoute
 
-    if(!dirIsPopulated(r.buildPath, ".class")) {
-      traceWarning(s"A 'run' task has been requested, but no class files can be found in the build directory: ${r.buildPath.toString}")
-    }
-    else {
-
+    if(assertCompile("'run' request", scalaRoute)) {
       val c = config("class")
 
       if (c.isEmpty) {
