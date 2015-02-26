@@ -27,7 +27,7 @@ The bad and the good
   - installation-specific configuration using a local file
   - no JLine/FSC means more memory for everything else.
 
-Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file, and output formatting.
+Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
 I wanted it, otherwise I wouldn't have coded it, but other people may not be interested.
 
@@ -36,7 +36,7 @@ Alternatives
 =============
 If you want a better, more professional tool (it seems most people are ok), in Scala source is an Ant task, ::
 
-    /home/rob/CodeReference/scala-2.11.0-M4/src/scaladoc/scala/tools/ant
+    .../scala-<version>/src/scaladoc/scala/tools/ant/Scaladoc.scala
 
 Personally, I want my documentation right there. Putting the 'I' in ``ant``, ``ant`` ain't ma' thing.
 
