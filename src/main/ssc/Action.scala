@@ -952,7 +952,7 @@ final class Action(
         b += "tree"
 
         if (config.asBoolean("dir")) {
-          b += config("-d")
+          b += "-d"
         }
 
         if (noColor) b += "-n"

@@ -22,7 +22,7 @@ The bad and the good
 
 :Good: - Java half-installable
   - makes documentation out of broken code
-  - works on many folder structures, can be asked to work on any
+  - works on many folder structures, can be asked to work many
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
   - installation-specific configuration using a local file
   - no JLine/FSC means more memory for everything else.
@@ -64,7 +64,7 @@ Building
 ---------
 I don't like build tools, and have no base to distribute Java .jar files. So building is by hand.
 
-You need Java (OpenJDK no problem, probably works on any Java7+) and Scala.
+You need Java and Scala.
 
 Download ``ssc``, and navigate a terminal into the top folder. Then, ::
 
@@ -72,7 +72,7 @@ Download ``ssc``, and navigate a terminal into the top folder. Then, ::
     mkdir build/main/scala
     scalac -verbose @scalacArgs
 
-That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `build`.
+That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `/build`.
 
 Then make executable .jar files from the code, ::
 
@@ -99,12 +99,12 @@ Restart ``bash`` config in every terminal you want to use (new terminals load au
  
     source ~/.bashrc
 
-or restart the whole computer, but in the middle of development, that's a pain.
+or restart the whole computer but, in the middle of development, that's a pain.
 
 
 Adjust the script
 -----------------
-If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVM/Scala installations. If development is on `Eclipse`, you have caos, as `Eclipse` will have Scalas and Javas everyplace.
+If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVM/Scala installations. If development is on `Eclipse`, you have caos.
 
 The launching script has been written to make this easy. Goto `bin/ssc`. At the top are a few annotated variables, notably,
 
@@ -146,6 +146,33 @@ If ``ssc`` recognises anything in the folder, it will try to produce documentati
 - Make necessary folders
 - Produce documentation whatever the broken state of the code
 
+A word about folder structures
+------------------------------
+``ssc`` can not handle any folder structure, but it can handle many different kinds. The rule is that source directories must not occupy each others paths. So this is bad, ::
+
+    ── src
+       └── test
+
+because /test is on the path of /src. This is bad, ::
+
+    ── src
+       └── main ── scala ── test
+ 
+This is ok, ::
+
+    ── src
+       └── doc
+
+no other source folder (no tests, no Java).
+
+This is ok, ::
+
+    ── src
+       ├── scala
+       └── test
+
+``ssc`` here favours intelligence over configuration or convention.
+
 
 Where to find what can be changed
 ---------------------------------
@@ -155,7 +182,7 @@ Type, ::
 
 to see what can be changed. If it's in the list, it can be on the commandline. Or in a `build.ssc` file (see below).
 
-Or look at the source code for the class ``Configuration``, which is definitive.
+Or look in the source code for the class ``Configuration``, which is definitive.
  
 
 Commandline
@@ -187,7 +214,7 @@ Commandline format
 
     ssc <switches> <task>
 
-Every modification is a switch, even destinations. To send documentation to a different folder (overriding the default and any `build.ssc` modifications), ::
+Every modification is a switch, even destinations. To send documentation to a different folder (overriding the default and `build.ssc` modifications), ::
 
     ssc -docDir docs/myDifferentlyNamedDocFolder doc
 
@@ -200,7 +227,7 @@ Worth remembering.
 
 build.ssc
 ---------
-This file can be invented and put anywhere you'd like to override ``ssc`` configuration. 
+This file can be created and placed anywhere you'd like to override ``ssc`` configuration. 
 
 If ``ssc`` is run in a folder with a `build.ssc` file, it reads the file and adds configuration it finds there to the default.
 
@@ -208,7 +235,7 @@ Note that commandline options override a `build.ssc` file. So, ::
 
    config = default + build.ssc (if it exists) + commandline options
 
-Any configuration option added to this file overrides the default values e.g. ::
+Any configuration option added to this file overrides default values e.g. ::
 
     # Build file for SSC
 

@@ -1,6 +1,11 @@
 == TODO
 And debug compiles?
 
+defend ssc on nothing:
+ssc.ParseCommandLine.parse(ParseCommandLine.scala:45)
+	at ssc.Runner$.main(Runner.scala:340)
+	at ssc.Runner.main(Runner.scala)
+
 find can do more than it says...
 
 
