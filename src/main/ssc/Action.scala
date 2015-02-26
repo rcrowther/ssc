@@ -365,6 +365,55 @@ final class Action(
   // Build environment //
   ///////////////////////
 
+
+
+  /** Verifies source paths do not lie within each others path.
+    *
+    * Prints appropriate messages if not.
+    *
+    * @return true if the paths pass, false if they fail.
+    */
+  def sourcePathVerify()
+      : Boolean =
+  {
+
+    /** Tests wether a string is contained within another, or visa versa.
+      *
+      * @return true if either string is wholy contained in the other
+      */
+    def unionContains(
+      str1: String,
+      str2: String
+    )
+        : Boolean =
+    {
+      var similar = true
+      var limit = Math.min(str1.size, str2.size) - 1
+      var i = 0
+      while(i < limit && similar) {
+        similar = str1(i) == str2(i)
+        i += 1
+      }
+      similar
+    }
+
+
+    val aScala = scalaRoute.srcPath.get.toAbsolutePath().toString
+    val aScalaTest = scalaTestRoute.srcPath.get.toAbsolutePath().toString
+    if(unionContains(aScala, aScalaTest)) {
+      traceError(s"A source path lies within the path of another path. The paths are:\n$aScala, $aScalaTest")
+      traceAdvice("SSC will not progress. Please reorganise the folder structure.")
+      false
+    }
+    else true
+  }
+
+
+  /** Return the paths of existing groups in the build paths.
+    *
+    * i.e. "/main/scala", "main/java".
+    * @return build classpaths which exist
+    */
   def compiledClasspaths
       : Seq[Path] =
   {
@@ -570,7 +619,7 @@ final class Action(
   // Control //
   /////////////
 
-  /** Test if sourcepaths exist on this compile route.
+  /** Tests if sourcepaths exist on this compile route.
     */
   def sourcePathExists(
     requester: String,
@@ -1237,19 +1286,22 @@ final class Action(
 
   def run() {
     //trace(s"action route...$taskName")
-    taskName match {
-      case "clear" => clear()
-      case "clean" => clean()
-      case "find" => find()
-      case "compile" => compile()
-      case "test" => scalaTest()
-      case "doc" => doc()
-      case "run" => runK()
-      case "jar" => jar()
-      case "introspect" => introspect()
-      case "bytecode" => bytecode()
+    if(sourcePathVerify()) {
 
-      case  _ => traceError(s"Unrecognised task? $taskName")
+      taskName match {
+        case "clear" => clear()
+        case "clean" => clean()
+        case "find" => find()
+        case "compile" => compile()
+        case "test" => scalaTest()
+        case "doc" => doc()
+        case "run" => runK()
+        case "jar" => jar()
+        case "introspect" => introspect()
+        case "bytecode" => bytecode()
+
+        case  _ => traceError(s"Unrecognised task? $taskName")
+      }
     }
   }
 

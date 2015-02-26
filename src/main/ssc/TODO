@@ -1,6 +1,21 @@
 == TODO
 And debug compiles?
 
+check test sources not in tree of source?
+Scalatest gets lost in this circumstance?
+Maybe a warning and block?
+
+"scalaSrcDir is test"?
+"'scalaTest' 'compile sources' request has no classes to work from, is forcing compile...
+"
+"'scalaTest' 'compile test' request has no classes to work from, is forcing compile...
+"
+Yes it does? It works if the test is repeated, but new material fools it?
+Test seems to have problems incrementally recompiling? It's the incremental
+test compile which is failing to find it's old gear?
+
+Tree. Tree!
+
 Dim the text, somehow
 
 Select groups in -config.
