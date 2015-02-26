@@ -53,6 +53,13 @@ How self-regarding.
 
 Install/half-install to the computer
 ====================================
+Needs
+-----
+Java7 and Scala. Both standard, OpenJDK is fine.
+
+Much of ``ssc`` works from shell invocation. It can use several in-system tools. If the host computer has ``graphviz``, ``ssc`` can leverage scaladoc to add inheritance diagrams. ``ssc`` also likes ``grep`` and ``tree``.
+
+
 Building
 ---------
 I don't like build tools, and have no base to distribute Java .jar files. So building is by hand.

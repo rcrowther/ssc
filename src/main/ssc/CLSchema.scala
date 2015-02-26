@@ -50,9 +50,16 @@ object CLSchema {
   "-case" -> "text must match case (default: false)"
   )
 
+  private val treeSwitches = Map[String, CLSwitchOption](
+  "-dir" -> "print directories only",
+  "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1)
+  )
+
   private val sourceSwitches = Map[String, CLSwitchOption](
     "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
-    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1)
+    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1),
+    "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path, false, 1),
+    "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1)
 )
 
   private val compileSwitches = {
@@ -67,10 +74,6 @@ sourceSwitches ++
 
     // Building //
     "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths, false, 1),
-    //"-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
-    //"-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1),
-    "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path, false, 1),
-    "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1),
 
     // scalac (compile) options //
     "-optimise" -> "faster bytecode by code analysis",
@@ -215,6 +218,7 @@ sourceSwitches ++
     // Full cleanup
     "clean" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     "find" ->  Seq(findSwitches, sourceSwitches, buildDirSwitch, outputFormatSwitch),
+    "tree" ->  Seq(treeSwitches, sourceSwitches, buildDirSwitch, outputFormatSwitch),
     "compile" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
@@ -251,6 +255,7 @@ sourceSwitches ++
     // Full cleanup
     "clean" -> "remove SSC material, except build.ssc and .jar files",
     "find" -> "search for text in source files",
+    "tree" -> "outputs a tree representation of source files",
     "compile" -> "run the scala compiler, scalac",
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",

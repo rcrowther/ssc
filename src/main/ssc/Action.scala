@@ -397,15 +397,23 @@ final class Action(
       similar
     }
 
+    val existingSourcesB = Seq.newBuilder[Path]
+    if (scalaRoute.srcPath != None) existingSourcesB += scalaRoute.srcPath.get
+    if (scalaTestRoute.srcPath != None) existingSourcesB += scalaTestRoute.srcPath.get
 
-    val aScala = scalaRoute.srcPath.get.toAbsolutePath().toString
-    val aScalaTest = scalaTestRoute.srcPath.get.toAbsolutePath().toString
-    if(unionContains(aScala, aScalaTest)) {
-      traceError(s"A source path lies within the path of another path. The paths are:\n$aScala, $aScalaTest")
-      traceAdvice("SSC will not progress. Please reorganise the folder structure.")
-      false
+    val existingSources = existingSourcesB.result()
+
+    if (existingSources.size < 2) true
+    else {
+      val aScala = scalaRoute.srcPath.get.toAbsolutePath().toString
+      val aScalaTest = scalaTestRoute.srcPath.get.toAbsolutePath().toString
+      if(!unionContains(aScala, aScalaTest)) true
+      else {
+        traceError(s"A source path lies within the path of another path. The paths are:\n$aScala, $aScalaTest")
+        traceAdvice("SSC will not progress. Please reorganise the folder structure.")
+        false
+      }
     }
-    else true
   }
 
 
@@ -776,8 +784,6 @@ final class Action(
     */
   def find() {
 
-
-
     val e = FindExecutable("grep").find(
       false,
       true,
@@ -787,10 +793,9 @@ final class Action(
 
     if(e == None) {
       traceWarning("'find' requested, but the program 'grep' could not be found. If 'find' is desired, please install 'grep' to the host computer.")
-      
-
     }
     else {
+
       val cps = config("text")
       if (cps.isEmpty) {
         traceError("Please add text to a 'find' task. Use switch -text <search text>")
@@ -800,14 +805,12 @@ final class Action(
         // Get the basic scala routes
         val r = scalaRoute
 
-        if(sourcePathExists("'search' request", r)) {
+        if(sourcePathExists("'find' request", r)) {
           traceInfo("searching...")
 
           val b = Seq.newBuilder[String]
-          //b += "("
 
           b += "grep"
-
 
           // recursive (simple)
           b += "-r"
@@ -910,6 +913,57 @@ final class Action(
       }
     }
   }
+
+
+  /** Outputs a tree representation of source.
+    */
+  def tree() {
+
+    val e = FindExecutable("tree").find(
+      false,
+      true,
+      sake.util.executable.Version.empty
+    )
+
+    if(e == None) {
+      traceWarning("'tree' requested, but the program 'tree' could not be found. If 'tree' is desired, please install 'tree' to the host computer.")
+    }
+    else {
+
+      // Get the basic scala routes
+      val r = scalaRoute
+
+      if(sourcePathExists("'tree' request", r)) {
+
+        val b = Seq.newBuilder[String]
+
+        b += "tree"
+
+        if (config.asBoolean("dir")) {
+          b += config("-d")
+        }
+
+        if (noColor) b += "-n"
+        else b += "-C"
+
+        val p =
+          if (!config("subpath").isEmpty) {
+            r.srcPath.get.resolve(config("subpath"))
+          }
+          else r.srcPath.get
+
+        if (!Dir.exists(p)) {
+          traceWarning(s"'tree' asked to output a non-existing folder: ${p.toString}")
+        }
+        else {
+          b += p.toString
+
+          shPrint(b.result())
+        }
+      }
+    }
+  }
+
 
 
   /** Produces compiled class files.
@@ -1286,23 +1340,32 @@ final class Action(
 
   def run() {
     //trace(s"action route...$taskName")
-    if(sourcePathVerify()) {
 
-      taskName match {
-        case "clear" => clear()
-        case "clean" => clean()
-        case "find" => find()
-        case "compile" => compile()
-        case "test" => scalaTest()
-        case "doc" => doc()
-        case "run" => runK()
-        case "jar" => jar()
-        case "introspect" => introspect()
-        case "bytecode" => bytecode()
+    taskName match {
+      case "clear" => clear()
+      case "clean" => clean()
+      case "introspect" => introspect()
+      case "bytecode" => bytecode()
 
-        case  _ => traceError(s"Unrecognised task? $taskName")
+      case  _ => {
+
+        // Test sourcepaths for these tasks
+        if(sourcePathVerify()) {
+          taskName match {
+            case "find" => find()
+            case "tree" => tree()
+            case "compile" => compile()
+            case "test" => scalaTest()
+            case "doc" => doc()
+            case "run" => runK()
+            case "jar" => jar()
+
+            case  _ => traceError(s"Unrecognised task? $taskName")
+          }
+        }
       }
     }
+
   }
 
 }//Action
