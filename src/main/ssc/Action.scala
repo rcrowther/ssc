@@ -7,6 +7,7 @@ import java.nio.file.Path
 import sake.util.file._
 import sake.util.executable.FindExecutable
 
+import java.util.regex.Pattern
 
 
 /** Carries actions ssc can make.
@@ -46,69 +47,62 @@ final class Action(
   protected val noColor: Boolean = config.asBoolean("noColor")
   protected val verbose: Boolean = config.asBoolean("verbose")
 
-  /** Holds route data for compiling.
-    */
-  class CompileRoute(
-    val buildPath: Path,
-    val srcPath: Option[Path],
-    val srcExtension: String,
-    val srcConfig: Seq[String]
-  )
-  {
-    override def toString()
-        : String =
-    {
-      val b = new StringBuilder()
-      b ++= "compileRoutes("
-      b append buildPath
-      b ++= ", "
-      b append srcPath
-      b ++= ", "
-      b ++= srcExtension
-      b ++= ", "
-      b append srcConfig
-      b += ')'
-      b.result()
-    }
-  }//CompileRoute
-
 
 
   ///////////
   // Utils //
   ///////////
   
-  private def buildPathBase : Path = cwd.resolve(config("buildDir"))
-  private def buildPathMain : Path = buildPathBase.resolve("main/")
+  // NB: Sometimes the build paths are not
+  // present, because the action does not require it.
+  private def buildPathBase : Option[Path] =
+    if (config.contains("buildDir")) Some(cwd.resolve(config("buildDir")))
+    else None
 
+  private def buildPathMain : Option[Path] =
+    if (buildPathBase != None) Some(buildPathBase.get.resolve("main/"))
+    else None
 
   // A lot of Java gear will not work without a correct level of
   // directory (for packaging). Classpaths to Main will fail.  Hence
   // this...
-  private def buildPathMainSections : Seq[Path] = Seq(
-    buildPathMain.resolve("scala"),
-    buildPathMain.resolve("java")
-  )
-
+  private def buildPathMainSections : Seq[Path] =
+    if (buildPathBase == None) Seq.empty[Path]
+    else {
+      Seq(
+        buildPathMain.get.resolve("scala"),
+        buildPathMain.get.resolve("java")
+      )
+    }
 
   // Tests are separated first, so jar and other collective runners
   // can include java/scala compiled gear by referencing
   // mainSections...
-  private val scalaRoute: CompileRoute = new CompileRoute(
-    buildPathBase.resolve("main/scala/"),
+  private lazy val scalaRoute: ProcessingRoute = ProcessingRoute(
+    if (buildPathBase == None) None else Some(buildPathBase.get.resolve("main/scala")),
     dirFind("scalaSrcDir", config.asSeq("scalaSrcDir")),
     ".scala",
     config.asSeq("scalaSrcDir")
   )
 
-  private val scalaTestRoute: CompileRoute = new CompileRoute(
-    buildPathBase.resolve("test/scala/"),
+  /*
+   private lazy val scalaSrcRoute: ProcessingRoute = ProcessingRoute(
+   dirFind("scalaSrcDir", config.asSeq("scalaSrcDir")),
+   config.asSeq("scalaSrcDir")
+   )
+   */
+  private lazy val scalaTestRoute: ProcessingRoute = ProcessingRoute(
+    if (buildPathBase == None) None else Some(buildPathBase.get.resolve("test/scala")),
     dirFind("scalaTestRoute", config.asSeq("scalaTestDir")),
     ".scala",
     config.asSeq("scalaTestDir")
   )
-
-
+  /*
+   private lazy val scalaTestSrcRoute: ProcessingRoute = ProcessingRoute(
+   dirFind("scalaTestRoute", config.asSeq("scalaTestDir")),
+   config.asSeq("scalaTestDir")
+   )
+   */
   private def docPath : Path = cwd.resolve(config("docDir"))
   private def libPath : Option[Path] = dirFind("libDir", config.asSeq("libDir"))
 
@@ -178,7 +172,9 @@ final class Action(
     }
     if (pathO == None){
       val ps = pathStrs.mkString(", ")
-      traceInfo(s"$requester could not find an existing directory in the sequence: $ps")
+      //NB: If we can't find directories it's not woth noting...
+      // they may not be used.
+      //traceInfo(s"$requester could not find an existing directory in the sequence: $ps")
       None
     }
     else {
@@ -187,6 +183,7 @@ final class Action(
       Some(pathStr.toPath)
     }
   }
+
 
 
   /////////////////////
@@ -366,7 +363,6 @@ final class Action(
   ///////////////////////
 
 
-
   /** Verifies source paths do not lie within each others path.
     *
     * Prints appropriate messages if not.
@@ -442,7 +438,7 @@ final class Action(
     */
   private def addSrcPathStrings(
     b: scala.collection.mutable.Builder[String, Seq[String]],
-    compileRoute : CompileRoute,
+    ProcessingRoute : ProcessingRoute,
     incrementalCompile : Boolean
   )
       : Boolean =
@@ -450,10 +446,10 @@ final class Action(
     // Gather srcpaths
     val targetSrcPaths =
       if (incrementalCompile) {
-        incrementalSrcs(compileRoute)
+        incrementalSrcs(ProcessingRoute)
       }
       else {
-        dirEntryPaths(compileRoute.srcPath, compileRoute.srcExtension).map{ p =>
+        dirEntryPaths(ProcessingRoute.srcPath, ProcessingRoute.srcExtension).map{ p =>
           p.toString
         }
       }
@@ -467,20 +463,20 @@ final class Action(
     * A raw method, needs protection against missing source/build
     * directories.
     *
-    * @param compileRoute a collection of paths to source and
+    * @param ProcessingRoute a collection of paths to source and
     *  target directories.
     * @return traversable of all paths, as strings.
     */ 
   // TODO: This seems to pick up stuff scalac doesn't compile, e.g.
   // orphans and configs. Bothered?
   private def incrementalSrcs(
-    compileRoute: CompileRoute
+    processingRoute: ProcessingRoute
   )
       : Traversable[String] =
   {
     //traceInfoPrint("incremental compile, file count:")
     val allCompiledPaths : Traversable[(Path, BasicFileAttributes)] =
-      dirEntryPathsAndAttributes(compileRoute.buildPath, ".class")
+      dirEntryPathsAndAttributes(processingRoute.buildPath.get, ".class")
 
     // Map the creation time to the filename, minus extension
     //TODO: This includes stacks of $ stuff which can be dropped?
@@ -498,8 +494,8 @@ final class Action(
     //println(s"allCompiledPathsMap: $allCompiledPathsMap")
     //println
     val allSrcPaths = dirEntryPathsAndAttributes(
-      compileRoute.srcPath.get,
-      compileRoute.srcExtension
+      processingRoute.srcPath.get,
+      processingRoute.srcExtension
     )
 
     val ret = allSrcPaths.filter{ pa =>
@@ -559,28 +555,28 @@ final class Action(
   // jar does not
   // scalatest does not?
   def doScalaCompile(
-    compileRoute: CompileRoute
+    processingRoute: ProcessingRoute
   )
       : Boolean =
   {
+    val buildPath = processingRoute.buildPath.get
     // Assert the build directory?
-    Dir.create(compileRoute.buildPath)
+    Dir.create(buildPath)
 
     // Empty the build directory, if not incrementally compiling
     if(
       !config.asBoolean("incremental") &&
-        dirIsPopulated(compileRoute.buildPath, ".class")
+        dirIsPopulated(buildPath, ".class")
     )
     {
-      Dir.clear(compileRoute.buildPath)
+      Dir.clear(buildPath)
     }
 
 
     // Build some compile options
-    // Use buildPathMain for the classpath, so any compiled class files are included. is this a help?
     val b = buildScalaStandardOptions(
       "scalac",
-      Some(compileRoute.buildPath),
+      Some(buildPath),
       true
     )
 
@@ -590,7 +586,7 @@ final class Action(
     // Maybe incremental compile, maybe full
     val needsCompiling = addSrcPathStrings(
       b,
-      compileRoute,
+      processingRoute,
       config.asBoolean("incremental")
     )
 
@@ -632,16 +628,44 @@ final class Action(
     */
   def sourcePathExists(
     requester: String,
-    compileRoute: CompileRoute
+    processingRoute: ProcessingRoute
   )
       : Boolean =
   {
-    if (compileRoute.srcPath == None) {
-      val configPaths = compileRoute.srcConfig.mkString(", ")
-      traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: $configPaths")
+    if (processingRoute.srcPath == None) {
+      val configPaths = processingRoute.srcConfig.mkString(", ")
+      traceInfo(s"$requester is requesting an operation from source files, but no directories can be found in the configured list: $configPaths")
       false
     }
     else true
+  }
+
+  /** Tests is a -subpath switch is a valid dir.
+    *
+    * Outputs it's own error messages.
+    */
+  private def validateDirSubpath(
+    requester: String,
+    processingRoute: ProcessingRoute
+  )
+      : Option[Path] =
+  {
+    if (!sourcePathExists(requester, processingRoute)) None
+    else {
+      val srcP = processingRoute.srcPath.get
+      if (config("subpath").isEmpty) {
+        Some(srcP)
+      }
+      else {
+        val maybeP = srcP.resolve(config("subpath"))
+        // Need to test if a subdir exists (the root )
+        if (java.nio.file.Files.isDirectory(maybeP)) Some(maybeP)
+        else {
+          traceWarning(s"A path created from the '-subpath' switch does not lead to a valid directory: $maybeP")
+          None
+        }
+      }
+    }
   }
 
   /** Compiles if no classes exist
@@ -653,16 +677,16 @@ final class Action(
     */
   def compileIfNotPopulated(
     requester: String,
-    compileRoute: CompileRoute
+    processingRoute: ProcessingRoute
   )
       : Boolean =
   {
-    if(dirIsPopulated(compileRoute.buildPath, ".class")) {
-      traceInfo(s"$requester is working from classes in ${compileRoute.buildPath.toString}")
+    if(dirIsPopulated(processingRoute.buildPath.get, ".class")) {
+      traceInfo(s"$requester is working from classes in ${processingRoute.buildPath.get.toString}")
       true
     }
     else {
-      assertCompile(requester,compileRoute)
+      assertCompile(requester, processingRoute)
     }
   }
 
@@ -673,19 +697,15 @@ final class Action(
     */
   def assertCompile(
     requester: String,
-    compileRoute: CompileRoute
+    processingRoute: ProcessingRoute
   )
       : Boolean =
   {
-    if (compileRoute.srcPath == None) {
-      val configPaths = compileRoute.srcConfig.mkString(", ")
-      traceInfo(s"$requester is requesting a compile, but no source directories can be found in the configuration options: $configPaths")
-      false
+    if (sourcePathExists(requester, processingRoute)) {
+      traceInfo(s"$requester is forcing compile...")
+      doScalaCompile(processingRoute)
     }
-    else {
-      traceInfo(s"$requester has no classes to work from, is forcing compile...")
-      doScalaCompile(compileRoute)
-    }
+    else false
   }
 
 
@@ -749,8 +769,9 @@ final class Action(
   /** Empties the build dir (so all compiled material).
     */
   def clear() {
-    traceInfo(s"clearing build directory $buildPathBase...")
-    Dir.clear(buildPathBase)
+    val bpb = buildPathBase.get
+    traceInfo(s"clearing build directory $bpb...")
+    Dir.clear(bpb)
   }
 
 
@@ -760,6 +781,8 @@ final class Action(
     * definitions.
     */
   def clean() {
+    val bpb = buildPathBase.get
+
     // Delete documentation...
     try {
       traceInfo(s"deleting documentation directory $docPath...")
@@ -776,8 +799,8 @@ final class Action(
     }
 
     //..and the build directory
-    traceInfo(s"deleting build directory $buildPathBase...")
-    Dir.delete(buildPathBase)
+    traceInfo(s"deleting build directory $bpb...")
+    Dir.delete(bpb)
   }
 
 
@@ -796,140 +819,316 @@ final class Action(
       traceWarning("'find' requested, but the program 'grep' could not be found. If 'find' is desired, please install 'grep' to the host computer.")
     }
     else {
+      // Get the basic scala routes
+      val r = scalaRoute
 
-      val cps = config("text")
-      if (cps.isEmpty) {
-        traceError("Please add text to a 'find' task. Use switch -text <search text>")
-      }
-      else {
+      val root = validateDirSubpath("'find' request", r)
+      if (root != None) {
 
-        // Get the basic scala routes
-        val r = scalaRoute
+        val b = Seq.newBuilder[String]
 
-        if(sourcePathExists("'find' request", r)) {
-          traceInfo("searching...")
+        b += "grep"
 
-          val b = Seq.newBuilder[String]
+        // recursive (simple)
+        b += "-r"
 
-          b += "grep"
+        // Add line numbering
+        b += "-n"
 
-          // recursive (simple)
-          b += "-r"
+        // -case via grep
+        if (!config.asBoolean("case")) {
+          b += "-i"
+        }
 
-          // Add line numbering
-          b += "-n"
-
-          if (!config.asBoolean("case")) {
-            b += "-i"
-          }
-
-          b += config("text")
-          b += r.srcPath.get.toString
-          //b += ")"
-          traceInfo(s"line:  ${b.result()}")
-
-          traceInfo("search result:")
-          //shPrint(b.result())
-          val (retCode, stdErr, stdOut) = shCatch (b.result())
-          if (retCode != 0) {
-            // Exit results are always a lottery
-            // Until someone digs in source, assuming '1' is 'nothing found'
-            retCode match {
-              case 1 => {
-                traceInfo("  ** no results **")
-              }
-              case _ => {
-                traceWarning("run errors")
-              }
-            }
-            trace(stdErr)
+        val re =
+          if(!config("get").isEmpty) {
+            //easy, the default.
+            b += config("get")
           }
           else {
+            // crazy as it is,
+            // empty works, and is API consistent
+            // End anchoring is spec.
+            // "-x" = match whole line
+            b += "-x"
+            b += config("match")
+          }
+        if(!config.asBoolean("hidden")) {
+          // Double glob.
+          b += "--exclude"
+          b += ".*"
+          b += "--exclude"
+          b += "*~"
+        }
+        // No way to do a directory
+        // change in grep. See the results formatting.
+        b += root.get.toString
 
-            // A major formatting job...
+        traceInfo(s"line:  ${b.result()}")
 
-            // Split the 'grep' lines
-            val lines = stdOut.split("\n")
+        traceInfo("search result:")
 
-            // We couldn't/didn't use a subprocess/switch directory
-            // search.
-            // So lets remove items above the search dir, and that part of
-            // the path, too. '/' accounts for slashes in mid-path.
-            val srcPathAsStr = r.srcPath.get.toString + '/'
-            val srcPathAsStrSize = srcPathAsStr.size
+        // Go!
+        val (retCode, stdErr, stdOut) = shCatch (b.result())
 
+        if (retCode != 0) {
+          // Exit results are always a lottery
+          // Until someone digs in source, assuming '1' is 'nothing found'
+          retCode match {
+            case 1 => {
+              traceInfo("  ** no results **")
+            }
+            case _ => {
+              traceWarning("run errors")
+            }
+          }
+          trace(stdErr)
+        }
+        else {
 
-            val linesFromSrc = lines.collect {
-              case l if(l.startsWith(srcPathAsStr)) => {
-                l.drop(srcPathAsStrSize)
-              }
+          // A major formatting job...
+
+          // Split the 'grep' lines
+          val lines = stdOut.split("\n")
+
+          // We couldn't/didn't use a subprocess/switch directory
+          // search.
+          // So lets remove items above the search dir
+          val srcPathAsStr = r.srcPath.get.toString + '/'
+
+          val origLines = lines.filter {
+            _.startsWith(srcPathAsStr)
+          }
+
+          // Split the lines
+          // Split at the first and second colons
+          // Return is (path, (linenumber, linedetail))
+          val splitLines: Seq[(String, (String, String))] =
+            origLines.map{ line =>
+              val twinLine = line.splitAt(line.indexOf(':'))
+              // NB: dropping the colon before the number
+              val detailLine = twinLine._2.drop(1)
+              val twinLine2 = detailLine.splitAt(detailLine.indexOf(':'))
+
+              // NB: dropping the colon after the number
+              (twinLine._1, (twinLine2._1, twinLine2._2.drop(1)))
             }
 
+          // and categorise
 
-            // Split at the first and second colons
-            // Return is (path, linenumber, linedetail)
-            val splitLinesFromSrc: Seq[(String, String, String)] =
-              linesFromSrc.map{ line =>
-                val twinLine = line.splitAt(line.indexOf(':'))
-                // NB: dropping the colon before the number
-                val numDetailLine = twinLine._2.drop(1)
-                val twinLine2 = numDetailLine.splitAt(numDetailLine.indexOf(':'))
-
-                // NB: dropping the colon after the number
-                (twinLine._1, twinLine2._1, twinLine2._2.drop(1))
-              }
+          //linesIn.foreach{p => println(p.toString)}
+          val b = scala.collection.mutable.Map[String, Seq[(String, String)]]()
 
 
-            // Now spacially format
-            var lastSrcPath = srcPathAsStr
-            val spaciallyFormatted = splitLinesFromSrc.map{ sl =>
-              val path = sl._1
-              // If this path is the same as the last path, drop all path
-              // output and add a little indent for the rest of the line.
-              // If not, add a preceeding newline to open the stanza, a
-              // following newline to the rest of the line, then the
-              // little indent.
-              val newPath =
-                if (path == lastSrcPath) "  "
-                else "\n" + path + "\n  "
-              lastSrcPath = path
-              (newPath, sl._2, sl._3 + "\n")
+          splitLines.foreach { case(pathStr, detail) =>
+            //println("oh: " + p.toString)
+            if (!b.contains(pathStr)) {
+              b += (pathStr -> Seq.empty[(String, String)])
             }
 
-            // Add color back, if requested
-            val splitLinesColored =
-              if(!noColor) {
-                spaciallyFormatted.map { sl =>
-                  (
-                    "\u001b[36m" + sl._1,
-                    "\u001b[32;2m" + sl._2 + "\u001b[35m:\u001b[0m",
-                    "\u001b[0m" + sl._3
-                  )
-                }
-              }
-              else splitLinesFromSrc
-
-            // Gather everything into a string blob
-            val lb = new StringBuilder
-            splitLinesColored.foreach{ sl =>
-              lb ++= sl._1
-              lb ++= sl._2
-              lb ++= sl._3
-            }
-
-            trace(lb.result())
-
+            val newV: Seq[(String, String)] = b(pathStr) :+ detail
+            b += (pathStr -> newV)
 
           }
+          val categorised = b.toSeq
+
+          // Trim keys (directory path strings) to subpath
+          //println(s"$")
+          val subpathed =
+            if (config("subpath").isEmpty) categorised
+            else {
+              val subPathLen = config("subpath").size + 1
+              categorised.map { case(k, v) =>
+                (k.drop(subPathLen), v)
+              }
+            }
+
+
+          // Add color back, if requested
+          val linesColored =
+            if(!noColor) {
+              subpathed.map { case(pathStr, detail) =>
+                // CYAN
+                val pathStrC = "\u001b[36m" + pathStr
+                val gseq = detail.map{ case(num, lineDetail) =>
+                  // GREEN and following is MAGENTA
+                  val lineNumC = "\u001b[32m" + num + "\u001b[35m"
+                  // RESET
+                  val lineC = "\u001b[0m" + lineDetail
+                  (lineNumC, lineC)
+                }
+                (pathStrC, gseq)
+              }
+            }
+            else subpathed
+
+
+
+          // Gather everything into a string blob
+          // ... and spacially format.
+          val lb = new StringBuilder
+          linesColored.foreach{ case(pathStr, details) =>
+            lb ++= pathStr
+            lb ++= "\n"
+
+            details.foreach {case(num, line) =>
+              lb ++= "  "
+              lb ++= num
+              lb ++= ": "
+              lb ++= line
+              lb ++= "\n"
+            }
+            lb ++= "\n"
+          }
+
+
+          if (subpathed.isEmpty) {
+            traceInfo("  ** no results **")
+          }
+          else trace(lb.result())
         }
       }
     }
   }
 
 
+  def categorise(
+    linesIn : Traversable[Path]
+  )
+      : Seq[(String, Seq[String])] =
+  {
+    //linesIn.foreach{p => println(p.toString)}
+    val b = scala.collection.mutable.Map[String, Seq[String]]()
+
+    linesIn.foreach { p: Path =>
+      //println("oh: " + p.toString)
+      val parentStr = p.getParent().toString
+      ////println("prnt: " + parentStr.toString)
+      if (!b.contains(parentStr)) {
+        b += (parentStr -> Seq.empty[String])
+      }
+
+      val newV: Seq[String] = b(parentStr) :+ p.getFileName().toString
+      b += (parentStr -> newV)
+
+    }
+    b.toSeq
+  }
+
+
+
+  /** Filters a traversable using configured match values.
+    *
+    * 
+    */
+  private def filterRe[A](trav: Traversable[A], getMatchRegion: (A) => String)
+      : Traversable[A] =
+  {
+    if(!config("get").isEmpty) {
+
+      val re =
+        if (config.asBoolean("case"))  Pattern.compile(config("get"))
+        else {
+          Pattern.compile(config("get"), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+        }
+      val m = re.matcher("")
+      println (s" mchr: $m")
+      trav.filter(r => m.reset(getMatchRegion(r)).find())
+    }
+    else {
+      if (!config("match").isEmpty) {
+        val re =
+          if (config.asBoolean("case"))  Pattern.compile(config("match"))
+          else {
+            Pattern.compile(config("match"), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+          }
+
+        val m = re.matcher("")
+        //traceWarning(s"re $re")
+        trav.filter(r => m.reset(getMatchRegion(r)).matches())
+      }
+      else trav
+    }
+  }
+
+
+
+  /** Searches for filenames in the source.
+    */
+  //TODO: hidden
+  // TODO: trim to subpath
+  def findFile() {
+
+    // Get the basic scala routes
+    val r = scalaRoute
+
+    val root = validateDirSubpath("'findfile' request", r)
+    if (root != None) {
+
+      val res = Dir.read(root.get)
+
+
+
+      // Do matches
+      // (the Traversable tool is generous)
+      // Only match against file names
+      val reLines =
+        filterRe[Path](res, (p: Path) => {p.base.toString})
+
+      // Categorize results
+      val categorised = categorise(reLines)
+
+      // Trim keys (directory path strings) to subpath
+      //println(s"$")
+      val subpathed =
+        if (config("subpath").isEmpty) categorised
+        else {
+          val subPathLen = config("subpath").size + 1
+          categorised.map { case(k, v) =>
+            (k.drop(subPathLen), v)
+          }
+        }
+
+      // Add color back, if requested
+      val linesColored =
+        if(!noColor) {
+          subpathed.map{ kv =>
+            val gl = kv._2.map("\u001b[0m" + _)
+            ("\u001b[36m" + kv._1, gl)
+          }
+        }
+        else categorised
+
+      // Gather everything into a string blob
+      // ... and spacially format.
+      val lb = new StringBuilder
+      linesColored.foreach{ sl =>
+        lb ++= sl._1
+        lb ++= "\n"
+
+        sl._2.foreach {gsl =>
+          lb ++= "  "
+          lb ++= gsl
+          lb ++= "\n"
+        }
+        lb ++= "\n"
+      }
+
+
+      if (subpathed.isEmpty) {
+        traceInfo("  ** no results **")
+      }
+      else trace(lb.result())
+      
+    }
+  }
+
+
+
   /** Outputs a tree representation of source.
     */
   def tree() {
+
 
     val e = FindExecutable("tree").find(
       false,
@@ -941,11 +1140,11 @@ final class Action(
       traceWarning("'tree' requested, but the program 'tree' could not be found. If 'tree' is desired, please install 'tree' to the host computer.")
     }
     else {
-
       // Get the basic scala routes
       val r = scalaRoute
 
-      if(sourcePathExists("'tree' request", r)) {
+      val root = validateDirSubpath("'tree' request", r)
+      if (root != None) {
 
         val b = Seq.newBuilder[String]
 
@@ -955,23 +1154,28 @@ final class Action(
           b += "-d"
         }
 
+        if (!config("get").isEmpty) {
+          // Use a glob. Spec allows it (though we ought to strip glob-significant chars like wildcards).
+          // However, we must allow content-free globbing
+          b += "-P"
+          b += "*" + config("get") + "*"
+        }
+
+        if (!config.asBoolean("hidden")) {
+          b += "-I"
+          b += "*~"
+          // NB: Tree is unable to find hidden Linux files.
+          //b += "-I"
+          //b += ".*"
+        }
+
         if (noColor) b += "-n"
         else b += "-C"
 
-        val p =
-          if (!config("subpath").isEmpty) {
-            r.srcPath.get.resolve(config("subpath"))
-          }
-          else r.srcPath.get
+        b += root.get.toString
 
-        if (!Dir.exists(p)) {
-          traceWarning(s"'tree' asked to output a non-existing folder: ${p.toString}")
-        }
-        else {
-          b += p.toString
-
-          shPrint(b.result())
-        }
+        //println(s"line: ${b.result()}")
+        shPrint(b.result())
       }
     }
   }
@@ -984,11 +1188,7 @@ final class Action(
     // Get the basic scala routes
     val r = scalaRoute
 
-    if (r.srcPath == None) {
-      val configPaths = r.srcConfig.mkString(", ")
-      traceWarning(s"A 'compile' task has been requested, but no source directories can be found in the configuration options: ${configPaths}")
-    }
-    else {
+    if (sourcePathExists("compile", r)) {
       doScalaCompile(r)
     }
   }
@@ -1156,6 +1356,99 @@ final class Action(
     }
   }
 
+  //import java.lang.Runtime
+  //import scala.tools.nsc.MainGenericRunner
+  //import scala.tools.nsc.interpreter.ILoop
+  //import scala.tools.nsc.GenericRunnerCommand
+  import scala.tools.nsc._
+  def errorFn(str: String): Boolean = {
+    trace(str)
+    false
+  }
+
+
+  def getSettings(args: List[String])
+      : Settings =
+  {
+    val command = new GenericRunnerCommand( List[String](), (x: String) => errorFn(x))
+    if (command.ok)
+      command.settings
+    else
+      throw new Exception(command.usageMsg)
+  }
+
+  def sync(args: Array[String], bootClasspathString: String, classpathString: String): Settings =
+  {
+    val compilerSettings = sync(args.toList)
+    if (!bootClasspathString.isEmpty)
+      compilerSettings.bootclasspath.value = bootClasspathString
+    compilerSettings.classpath.value = classpathString
+    compilerSettings
+  }
+
+  def sync(options: List[String]) =
+  {
+    val st = getSettings(options)
+
+    // -Yrepl-sync is only in 2.9.1+
+    final class Compat {
+      def Yreplsync = st.BooleanSetting("-Yrepl-sync", "For compatibility only.")
+    }
+    implicit def compat(s: Settings): Compat = new Compat
+
+    st.Yreplsync.value = true
+    st
+  }
+
+
+  import java.io.PrintWriter
+  //new interpreter.ILoop process settings
+  def repl()
+  {
+    val args = Array("")
+    lazy val interpreterSettings = sync(args.toList)
+    val compilerSettings = sync(args, "", "/home/rob/Code/sake/build/main/scala")
+    //if (settings.classpath.isDefault)
+    //settings.classpath.value = sys.props("java.class.path")
+
+
+    println(s"compilerSettings:  ${compilerSettings.bootclasspath}, ${compilerSettings.classpath} ${compilerSettings.Xnojline}")
+    println(s"interpreterSettings:  ${interpreterSettings.bootclasspath}, ${interpreterSettings.classpath} ${interpreterSettings.Xnojline} ${interpreterSettings.Yreplsync}")
+
+    // val rt = Runtime.getRuntime()
+    traceInfo("repl...")
+    //try {
+    // rt.exec("/home/rob/Code/sake/repl")
+    //command.bootclasspath.value = "/home/rob/Code/sake/build/main/scala"
+    /*
+     val l: interpreter.ILoop = new interpreter.ILoop(
+     None,
+     new PrintWriter(scala.Console.out)
+     )
+     {
+     override def createInterpreter() = {
+     super.createInterpreter()
+     interpreter.interpret("initialCommands")
+     }
+     }
+     l.process(command.settings)
+     */
+
+    val l = new InterpreterLoop()
+    l.main(compilerSettings)
+    //interpreter.ILoop.run("1 + 1")
+    traceInfo("doh.")
+
+    /*
+     }
+     catch {
+     case e: Exception => {
+     traceInfo("didn't work")
+     }
+     }
+     */
+  }
+
   def scalaTest()
   {
     // ensure compiled src classes exist
@@ -1208,7 +1501,7 @@ final class Action(
 
 
           // ...and the directory with the tests in
-          b += r.buildPath.toString
+          b += r.buildPath.get.toString
 
           //...and the output reporter
           // decide where output goes
@@ -1270,10 +1563,10 @@ final class Action(
   def jar()
   {
     // Get the basic scala routes
-    val scalaRt = scalaRoute
+    val r = scalaRoute
 
     // ensure compiled classes exist
-    if(assertCompile("'jar' request", scalaRt)) {
+    if(assertCompile("'jar' request", r)) {
 
       // Create a manifest file
       val b = Seq.newBuilder[String]
@@ -1352,6 +1645,7 @@ final class Action(
       case "clean" => clean()
       case "introspect" => introspect()
       case "bytecode" => bytecode()
+      case "repl" => repl()
 
       case  _ => {
 
@@ -1359,6 +1653,7 @@ final class Action(
         if(sourcePathVerify()) {
           taskName match {
             case "find" => find()
+            case "findfile" => findFile()
             case "tree" => tree()
             case "compile" => compile()
             case "test" => scalaTest()

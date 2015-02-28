@@ -42,47 +42,53 @@ object CLSchema {
     "-buildDir" -> ("path of the build directory", "build", ParameterDescription.path, false, 1)
   )
 
-///////////////////
-// Task switches //
-///////////////////
+  ///////////////////
+  // Task switches //
+  ///////////////////
+
   private val findSwitches = Map[String, CLSwitchOption](
-  "-text" -> ("text to seek", "", ParameterDescription.text, false, 1),
-  "-case" -> "text must match case (default: false)"
+    "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1),
+    "-get" -> ("partial text match against live text (filename base or a line)", "", ParameterDescription.text, false, 1),
+    "-match" -> ("match a regex against live text (filename base or a line). Full match, anchored at text ends", "", ParameterDescription.text, false, 1),
+    "-hidden" -> "include hidden files",
+    "-case" -> "text must match case"
   )
 
   private val treeSwitches = Map[String, CLSwitchOption](
-  "-dir" -> "print directories only",
-  "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1)
+    "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1),
+    "-dir" -> "output directories only",
+    "-get" -> ("partial text match against live text (filename base or a line). Case-sensitve", "", ParameterDescription.text, false, 1),
+    "-hidden" -> "include hidden files ('tree' can not find hidden Unix files - preceeded with a dot - with or without this switch)"
   )
 
   private val sourceSwitches = Map[String, CLSwitchOption](
-    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src","."), ParameterDescription.path, false, 1),
-    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java"), ParameterDescription.path, false, 1),
+    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src", "scala", "."), ParameterDescription.path, false, 1),
+    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java", "java"), ParameterDescription.path, false, 1),
     "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path, false, 1),
     "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1)
-)
+  )
 
   private val compileSwitches = {
-sourceSwitches ++
-  Map[String, CLSwitchOption](
-    /** The encoding used by source files
-      *
-      * Note: Nothing to do with document output.
-      */
-    "-charset" -> ("charset of source documents", Seq("UTF-8"), ParameterDescription.encoding, false, 1),
+    sourceSwitches ++
+    Map[String, CLSwitchOption](
+      /** The encoding used by source files
+        *
+        * Note: Nothing to do with document output.
+        */
+      "-charset" -> ("charset of source documents", Seq("UTF-8"), ParameterDescription.encoding, false, 1),
 
 
-    // Building //
-    "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths, false, 1),
+      // Building //
+      "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths, false, 1),
 
-    // scalac (compile) options //
-    "-optimise" -> "faster bytecode by code analysis",
-    "-incremental" -> ("compile only changed files", "true"),
-    "-feature" -> ("turn on Scala's feature warnings (needs a new compile to report)"),
-    "-deprecation" -> "turn on Scala's deprecation warnings (needs a new compile to report)",
-    "-meter"  -> ("show a progressbar, one of 'none', 'progress', 'bounce', 'buzz'. Only visible using the -verbose switch (default: 'progress')", "progress", ParameterDescription.strCode, false, 1)
-  )
-}
+      // scalac (compile) options //
+      "-optimise" -> "faster bytecode by code analysis",
+      "-incremental" -> ("compile only changed files", "true"),
+      "-feature" -> ("turn on Scala's feature warnings (needs a new compile to report)"),
+      "-deprecation" -> "turn on Scala's deprecation warnings (needs a new compile to report)",
+      "-meter"  -> ("show a progressbar, one of 'none', 'progress', 'bounce', 'buzz'. Only visible using the -verbose switch (default: 'progress')", "progress", ParameterDescription.strCode, false, 1)
+    )
+  }
 
   private val docDirSwitch = Map[String, CLSwitchOption](
     // scaladoc options //
@@ -212,20 +218,21 @@ sourceSwitches ++
   val taskSwitchSeq = Map[String, Seq[Map[String, CLSwitchOption]]](
     "bytecode" -> Seq(bytecodeSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "introspect" -> Seq(introspectSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "repl" -> Seq(outputFormatSwitch),
+    //"repl" -> Seq(outputFormatSwitch),
     // Empty compiles
     "clear" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     // Full cleanup
     "clean" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
-    "find" ->  Seq(findSwitches, sourceSwitches, buildDirSwitch, outputFormatSwitch),
-    "tree" ->  Seq(treeSwitches, sourceSwitches, buildDirSwitch, outputFormatSwitch),
+    "find" ->  Seq(findSwitches, sourceSwitches, outputFormatSwitch),
+    "findfile" ->  Seq(findSwitches, sourceSwitches, outputFormatSwitch),
+    "tree" ->  Seq(treeSwitches, sourceSwitches, outputFormatSwitch),
     "compile" -> Seq(compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch)
-    // TOCONSIDER: Will be enabled sometime, likely
-    //"reload" -> Seq(outputFormatSwitch)
+      // TOCONSIDER: Will be enabled sometime, likely
+      //"reload" -> Seq(outputFormatSwitch)
   )
 
 
@@ -249,20 +256,21 @@ sourceSwitches ++
   val tasks = Map[String, CLArgOption](
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",
     "introspect" -> "output information on classes",
-    "repl" -> "start a repl (not enabled!)",
+    //"repl" -> "start a repl (not enabled!)",
     // Empty compiles
     "clear" -> "empty the build directory (deletes compiled files)",
     // Full cleanup
     "clean" -> "remove SSC material, except build.ssc and .jar files",
     "find" -> "search for text in source files",
+    "findfile" -> "search for source files in directories",
     "tree" -> "outputs a tree representation of source files",
     "compile" -> "run the scala compiler, scalac",
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",
     "doc" -> "run the scala documentation tool, scaladoc",
     "jar" -> "make a jar from compiled files (use -mainClass to create an executable)"
-    // TOCONSIDER: Will be enabled sometime, likely
-    //"reload" -> "reload the build definition - changes the default config"
+      // TOCONSIDER: Will be enabled sometime, likely
+      //"reload" -> "reload the build definition - changes the default config"
   )
 
 }//CLSchema

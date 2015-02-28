@@ -9,11 +9,11 @@ trait Trace
   private val sep = System.lineSeparator()
 
   private val GREEN = "\u001b[32m"
-  protected val MAGENTA = "\u001b[35m"
+  private val MAGENTA = "\u001b[35m"
   private val CYAN = "\u001b[36m"
   private val YELLOW = "\u001b[33m"
   private val RED = "\u001b[31m"
-  protected val WHITE = "\u001b[37m"
+  private val WHITE = "\u001b[37m"
   // Well, it's not this...
   private val DIMWHITE = "\u001b[37;2m"
   private val BOLDWHITE = "\u001b[1m"

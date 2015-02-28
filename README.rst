@@ -29,7 +29,7 @@ The bad and the good
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
-I wanted it, otherwise I wouldn't have coded it, but other people may not be interested.
+I wanted it, otherwise I wouldn't have coded it, but other people may not be interested. Still, it can be cool. Let's say you'd like to understand an extensive Scala codebase. Dive into the corner you are interested in, then run ``ssc doc``. Chances are, ``ssc`` will work out the code layout. The compile will fail, because you didn't document everything, but so what? Now you can have a clutch of Scaladoc laying out inheritance, implicits (if you need), passed values, and more.
 
 
 Alternatives
@@ -146,14 +146,15 @@ If ``ssc`` recognises anything in the folder, it will try to produce documentati
 - Make necessary folders
 - Produce documentation whatever the broken state of the code
 
+
 A word about folder structures
 ------------------------------
-``ssc`` can not handle any folder structure, but it can handle many different kinds. The rule is that source directories must not occupy each others paths. So this is bad, ::
+``ssc`` can not handle any folder structure, but it can handle many different variations. The rule is that source directories must not occupy another source  path. So this is bad, ::
 
     ── src
        └── test
 
-because /test is on the path of /src. This is bad, ::
+because /test is on the path of /src. This is bad, also, ::
 
     ── src
        └── main ── scala ── test
@@ -163,7 +164,7 @@ This is ok, ::
     ── src
        └── doc
 
-no other source folder (no tests, no Java).
+...no other source folder (no tests, no Java).
 
 This is ok, ::
 
@@ -222,7 +223,7 @@ not, ::
 
     ssc doc docs/myDifferentlyNamedDocFolder
 
-Worth remembering.
+So, "Everything is a switch".
 
 
 build.ssc

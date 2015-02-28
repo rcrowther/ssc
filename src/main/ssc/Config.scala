@@ -4,16 +4,9 @@ import scala.collection.GenTraversableOnce
 
 
 /** Wraps a group config so the interface is uncluttered.
-*/
+  */
 class Config(val repr: Map[String, Seq[String]])
 {
-/*
-  def ++ (xs: GenTraversableOnce[(String, String)])
-      : Config =
-  {
-    new Config(repr ++ xs)
-  }
-*/
 
   def apply(k: String)
       : String =
@@ -31,24 +24,26 @@ class Config(val repr: Map[String, Seq[String]])
       : Boolean =
   {
     if (!repr.contains(k)) {
-println(s"Warning** Non-existent config: key $k")
-true
-}
-else {
-    if (repr(k).isEmpty) {
-println(s"Warning** Empty config: key $k")
-true
-}
-    else {
-    val v = repr(k)(0)
-    if (v == "true") true
-    else {
-      if(v == "false") false
-      else throw new Exception(s"Key $k with value $v can not be decoded as Boolean")
+      println(s"Warning** Non-existent config: key $k")
+      true
     }
-}
+    else {
+      if (repr(k).isEmpty) {
+        println(s"Warning** Empty config: key $k")
+        true
+      }
+      else {
+        val v = repr(k)(0)
+        if (v == "true") true
+        else {
+          if(v == "false") false
+          else throw new Exception(s"Key $k with value $v can not be decoded as Boolean")
+        }
+      }
+    }
   }
-}
+
+  def contains(k: String) : Boolean = repr.contains(k)
 
   def asInt(k: String)
       : Int =
@@ -76,6 +71,7 @@ true
 }//Config
 
 
+
 object Config {
 
   protected def emptyThing = new Config(Map.empty[String, Seq[String]])
@@ -87,16 +83,17 @@ object Config {
     *
     * Here mainly to type the default config.
     */
-/*
-  def apply(elems: (String, String)*)
-      : Config =
-  {
-    new Config(elems.toMap)
-  }
-*/
+  /*
+   def apply(elems: (String, String)*)
+   : Config =
+   {
+   new Config(elems.toMap)
+   }
+   */
   def apply(elems: Map[String, Seq[String]])
       : Config =
   {
     new Config(elems)
   }
+
 }//Config
