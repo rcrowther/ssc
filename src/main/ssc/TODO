@@ -3,9 +3,12 @@ And debug compiles?
 
 Colours still not rising from the trait.
 
+Colours please in -config.
+
+Please do 'nothing' gracefully.
+
 probably drop compile switches from introspect and bytecode, when we are sure they don't compile...
 
-find files
 
 defend ssc on nothing:
 ssc.ParseCommandLine.parse(ParseCommandLine.scala:45)

@@ -218,7 +218,7 @@ object CLSchema {
   val taskSwitchSeq = Map[String, Seq[Map[String, CLSwitchOption]]](
     "bytecode" -> Seq(bytecodeSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "introspect" -> Seq(introspectSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    //"repl" -> Seq(outputFormatSwitch),
+    "repl" -> Seq(outputFormatSwitch),
     // Empty compiles
     "clear" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     // Full cleanup
@@ -256,7 +256,7 @@ object CLSchema {
   val tasks = Map[String, CLArgOption](
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",
     "introspect" -> "output information on classes",
-    //"repl" -> "start a repl (not enabled!)",
+    "repl" -> "start a repl (not enabled!)",
     // Empty compiles
     "clear" -> "empty the build directory (deletes compiled files)",
     // Full cleanup

@@ -85,24 +85,13 @@ final class Action(
     config.asSeq("scalaSrcDir")
   )
 
-  /*
-   private lazy val scalaSrcRoute: ProcessingRoute = ProcessingRoute(
-   dirFind("scalaSrcDir", config.asSeq("scalaSrcDir")),
-   config.asSeq("scalaSrcDir")
-   )
-   */
   private lazy val scalaTestRoute: ProcessingRoute = ProcessingRoute(
     if (buildPathBase == None) None else Some(buildPathBase.get.resolve("test/scala")),
     dirFind("scalaTestRoute", config.asSeq("scalaTestDir")),
     ".scala",
     config.asSeq("scalaTestDir")
   )
-  /*
-   private lazy val scalaTestSrcRoute: ProcessingRoute = ProcessingRoute(
-   dirFind("scalaTestRoute", config.asSeq("scalaTestDir")),
-   config.asSeq("scalaTestDir")
-   )
-   */
+
   private def docPath : Path = cwd.resolve(config("docDir"))
   private def libPath : Option[Path] = dirFind("libDir", config.asSeq("libDir"))
 
@@ -1356,98 +1345,63 @@ final class Action(
     }
   }
 
-  //import java.lang.Runtime
-  //import scala.tools.nsc.MainGenericRunner
-  //import scala.tools.nsc.interpreter.ILoop
-  //import scala.tools.nsc.GenericRunnerCommand
-  import scala.tools.nsc._
+
+/*
+
+
+  def repl()
+  {
+
+
+    println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
+
+  }
+*/
+
+import java.io.{ File }
+import scala.tools.nsc.util.{ ClassPath, ScalaClassLoader }
+import scala.tools.nsc.Properties.{ versionString, copyrightString }
+import scala.tools.nsc.GenericRunnerCommand._
+import scala.tools.nsc.GenericRunnerCommand
+import scala.tools.nsc.interpreter.ILoop
+import scala.tools.nsc._
+
   def errorFn(str: String): Boolean = {
-    trace(str)
+    Console.err println str
     false
   }
 
-
-  def getSettings(args: List[String])
-      : Settings =
-  {
-    val command = new GenericRunnerCommand( List[String](), (x: String) => errorFn(x))
-    if (command.ok)
-      command.settings
-    else
-      throw new Exception(command.usageMsg)
+  def errorFn(ex: Throwable): Boolean = {
+    ex.printStackTrace()
+    false
   }
 
-  def sync(args: Array[String], bootClasspathString: String, classpathString: String): Settings =
-  {
-    val compilerSettings = sync(args.toList)
-    if (!bootClasspathString.isEmpty)
-      compilerSettings.bootclasspath.value = bootClasspathString
-    compilerSettings.classpath.value = classpathString
-    compilerSettings
-  }
-
-  def sync(options: List[String]) =
-  {
-    val st = getSettings(options)
-
-    // -Yrepl-sync is only in 2.9.1+
-    final class Compat {
-      def Yreplsync = st.BooleanSetting("-Yrepl-sync", "For compatibility only.")
-    }
-    implicit def compat(s: Settings): Compat = new Compat
-
-    st.Yreplsync.value = true
-    st
-  }
-
-
-  import java.io.PrintWriter
-  //new interpreter.ILoop process settings
   def repl()
+: Boolean =
   {
-    val args = Array("")
-    lazy val interpreterSettings = sync(args.toList)
-    val compilerSettings = sync(args, "", "/home/rob/Code/sake/build/main/scala")
-    //if (settings.classpath.isDefault)
-    //settings.classpath.value = sys.props("java.class.path")
+println("home:" + System.getProperty("java.home"))
+val args = Array[String](
+""
+)
 
+    val command = new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
+val settings = command.settings
+    def sampleCompiler = new Global(settings) 
 
-    println(s"compilerSettings:  ${compilerSettings.bootclasspath}, ${compilerSettings.classpath} ${compilerSettings.Xnojline}")
-    println(s"interpreterSettings:  ${interpreterSettings.bootclasspath}, ${interpreterSettings.classpath} ${interpreterSettings.Xnojline} ${interpreterSettings.Yreplsync}")
+    if (!command.ok) return errorFn("\n" + command.shortUsageMsg)
+    else if (settings.version) return errorFn("Scala code runner %s -- %s".format(versionString, copyrightString))
+    else if (command.shouldStopWithInfo)  return errorFn(command getInfoMessage sampleCompiler)
 
-    // val rt = Runtime.getRuntime()
-    traceInfo("repl...")
-    //try {
-    // rt.exec("/home/rob/Code/sake/repl")
-    //command.bootclasspath.value = "/home/rob/Code/sake/build/main/scala"
-    /*
-     val l: interpreter.ILoop = new interpreter.ILoop(
-     None,
-     new PrintWriter(scala.Console.out)
-     )
-     {
-     override def createInterpreter() = {
-     super.createInterpreter()
-     interpreter.interpret("initialCommands")
-     }
-     }
-     l.process(command.settings)
-     */
-
-    val l = new InterpreterLoop()
-    l.main(compilerSettings)
-    //interpreter.ILoop.run("1 + 1")
-    traceInfo("doh.")
-
-    /*
-     }
-     catch {
-     case e: Exception => {
-     traceInfo("didn't work")
-     }
-     }
-     */
+//settings.loadfiles.isDefault = false
+//settings.loadfiles.value = Nil
+//settings.Xnojline = true
+println(s"settings.loadfiles.isDefault: ${settings.loadfiles.isDefault}")
+    println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
+      //settings.Yreplsync.value = true
+val i : Boolean = new ILoop process settings
+i 
   }
+
 
   def scalaTest()
   {
@@ -1666,7 +1620,7 @@ final class Action(
         }
       }
     }
-
+//sys.exit(1)
   }
 
 }//Action

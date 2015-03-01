@@ -15,46 +15,73 @@
 # - It allows us to give a cool name to the command, whatever
 # versioning junk is used for the executable.
 #
-# This was majorly lifted from the straight scala launch/run script.
+# This was majorly lifted from the Scala launch/run script.
 # I know nothing of this stuff. R.C.
 #
 
-## Adjust to point at a different Java installation.
-# Unless overridden by text here, the script assumes commandline
-# execution and that "java" is on the system PATH.
+
+## Java
+# The script first tries the options below. If an executable is not
+# found, the script assumes that "java" is installed on the system.
+
+## Enable to point at a different JDK/JRE Java installation.
+# (to be found in the subfolder /bin/java)
+# Note also that SSC has more options if you use an JDK, rather than a JRE.
 JAVA_HOME=""
-## If your Java installation is not in the usual /bin/java position
-# override here.
-# Not recommended, will crash Sake scripts which rely on conventional
-# installation folders, to reach tools.
+
+# If your Java executable is not in the usual /bin position override
+# here. This should be the address of the executable itself.
 ##JAVACMD=""
 
-## Adjust to point at a Scala installation.
-# The script will fail unless this is 
-# variable is set.
+
+## Scala
+# The script tries the options below. If no folders are found, the
+# script exits.
+# (SSC must find at this address not only executable scripts, but a
+# full set of Scala jars)
+
+## Enable to point at a different Scala installation
+# (to be found in the subfolder /lib)
 SCALA_HOME=""
-## If your Scala library is not in the usual /lib/ position
-# override here.
-# Not recommended, will crash Sake scripts which rely on conventional
-# installation folders, to reach tools.
+
+# If your Scala library is not in the usual /lib/ position override
+# here. This should be the address of a folder containing Scala jars.
 ##SCALALIB=""
 
-## Adjust to point at a Sake installation.
-# The script will first guess at the library (correct for a normal
-# installation) then look for a /lib/sake here.
+
+## SSC
+# The script will first try a local library (correct for a normal
+# installation) then look through the options below. If no
+# jar is found, the script exits.
+# (for development, remove the jar from the library, then point SAKELIB
+# at the development area)
+
+## Enable to point at a different SSC installation
+# (to be found in the subfolder /lib)
 SAKE_HOME=""
-## If your Sake library is not in the usual /lib/ position
-# override here.
-#SAKELIB=""
+
+## If your SSC jar is not in the usual /lib position override
+# here. This should be the address of an ssc jar.
+##SAKELIB=""
+
 
 
 ## The class to execute in Scala code
 SCALA_EXECUTABLE="ssc.Runner"
 
 
+
+
+## Functions
+#
+
+# Returns the location of the folder containing this script
+# (usually this returns the pwd, which will be the directory
+# above the /bin - the /bin being the PATH invoked)
 findScriptHome () {
     # see SI-2092 and SI-5792
     local source="${BASH_SOURCE[0]}"
+    # while symlink...
     while [ -h "$source" ] ; do
 	local linked="$(readlink "$source")"
 	local dir="$( cd -P $(dirname "$source") && cd -P $(dirname "$linked") && pwd )"
@@ -67,6 +94,60 @@ execCommand () {
     [[ -n $SCALA_RUNNER_DEBUG ]] && echo "" && for arg in "$@"; do echo "$arg"; done && echo "";
     "$@"
 }
+
+# Returns a list of items in a directory.
+# The list has a separator between items. If there are no items, the
+# function returns an empty string
+# $1 the directory path
+# $2 the separator
+# return the list of items, interspaced with the seperator
+function gatherJars {
+
+    # Test for items in the lib. If the library is empty, the gathering
+    # code returns a corrupt value (the globbing path).
+
+    local dirlist=""
+
+    # If something there, add to classpath
+    if [[ "$(ls -A $1)" ]]; then
+
+	# Constructing the extension classpath
+	# Gives bad result if /lib is empty
+
+	for ext in "$1"/* ; do
+            if [[ -z "$dirlist" ]]; then
+		dirlist="$ext"
+            else
+		dirlist="${dirlist}$2${ext}"
+            fi
+	done
+
+    fi
+    echo "$dirlist"
+}
+
+
+
+# An empty list, for use with stringSepAppend
+EMPTYLIST="-"
+
+# Appends an item to a string with separator
+# The separator will not be appended if the list is empty, so the
+# sparators will always be between appended items.
+# *Must* be initiated with EMPTYLIST (see above).
+# If a value is possibly empty, it *must* be tested.
+# $1 the string
+# $2 the item to be appended
+# $3 the separator
+# return the list with $2 appended (and any seperator)
+function stringSepAppend {
+    if [[ "$1" == EMPTYLIST ]]; then
+	echo "$2"
+    else
+	echo "$1$3$2"
+    fi
+}
+
 
 ## big deal of debug
 # Not sure what the right default is here: trying nonzero.
@@ -116,9 +197,16 @@ fi
 ## gubed fo dne - end of debug
 
 
-# Finding the root folder for this Scala distribution
+
+
+## Script start
+##
+
+# Find the containing folder for this script
+# (the folder surrounding /bin)
 SCRIPT_HOME="$(findScriptHome)"
 SEP=":"
+TOOL_CLASSPATH=EMPTYLIST
 
 # Possible additional command line options
 WINDOWS_OPT=""
@@ -129,36 +217,6 @@ if [[ -n "$cygwin" ]]; then
     SCRIPT_HOME="$(shome="$(cygpath --windows --short-name "$SCRIPT_HOME")" ; cygpath --unix "$shome")"
     # elif uname |grep -q ^MINGW; then
     #   SEP=";"
-fi
-
-
-# Gathers paths from /lib. Library .jars are in /lib
-# Count the items in the lib. If the library is empty, the gathering
-# code fails, and TOOL_CLASSPATH is corrupt.
-for f in "$SCRIPT_HOME"/lib/* ; do
-    FILECOUNT=$[$FILECOUNT+1]
-done
-
-((FILECOUNT--))
-
-# If something there, add to classpath
-if (("$FILECOUNT" != 0)) ; then
-
-    # Constructing the extension classpath
-    # Gives bad result if /lib is empty
-    TOOL_CLASSPATH=""
-    if [[ -z "$TOOL_CLASSPATH" ]]; then
-	for ext in "$SCRIPT_HOME"/lib/* ; do
-            if [[ -z "$TOOL_CLASSPATH" ]]; then
-		TOOL_CLASSPATH="$ext"
-            else
-		TOOL_CLASSPATH="${TOOL_CLASSPATH}${SEP}${ext}"
-            fi
-	done
-    fi
-
-    #echo FILECOUNT
-   # echo $FILECOUNT
 fi
 
 
@@ -187,55 +245,90 @@ if [[ -n "$cygwin$mingw" ]]; then
     esac
 fi
 
+
+
+
+## Executables and classpaths
+##
+
+# Decide the Java executable.
+# if JAVACMD.isEmpty and !JAVA_HOME.isEmpty and JAVA_HOME.exists and
+# .isExecutable
+if [[ -z "$JAVACMD" && -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
+    JAVACMD="$JAVA_HOME/bin/java"
+fi
+
+
+# If we have a JDK, gather a couple of jars for the classpath
+# For other tools, we'll have to commandline execute from java.home
+# (visualvm, I don't yet know).
+# Look for lib/tools.jar, it's a good candidate to tell us we have a
+# JDK
+is_JDK="false"
+if [[ -n "$JAVA_HOME" && -r "$JAVA_HOME/lib/tools.jar" ]]; then
+    # Alright, we're picking and choosing the JDK material.
+    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/tools.jar $SEP)"
+    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/jconsole.jar $SEP)"
+    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/missioncontrol/mc.jar $SEP)"
+    is_JDK="true"
+fi
+
+
+
 # Put the scala home on the toolpath
-# if SCALALIB.isEmpty and !SCALA_HOME.isEmpty and SCALA_HOME.exists
-# and .isReadable
-if [[ -z "$SCALALIB" && -n "$SCALA_HOME" && -r "$SCALA_HOME/lib/scala-library.jar" ]]; then
-    SCALALIB="$SCALA_HOME/lib/scala-library.jar"
+# if SCALALIB.isEmpty and !SCALA_HOME.isEmpty and
+# SCALA_HOME/lib.exists and .isReadable
+if [[ -z "$SCALALIB" && -n "$SCALA_HOME" && -r "$SCALA_HOME/lib" ]]; then
+    SCALALIB="$SCALA_HOME/lib"
 else
-    echo "This script must have the variable SCALA_HOME pointed at a Scala executable (with executable .jars in /lib)"
+    echo "This script must have the variable SCALA_HOME pointed at a Scala distribution folder (with executable .jars in /lib)"
     onExit
 fi
 
-if [[ -z "$TOOL_CLASSPATH" ]]; then
-    TOOL_CLASSPATH="$SCALALIB"
-else
-    TOOL_CLASSPATH="${TOOL_CLASSPATH}${SEP}${SCALALIB}"
+# Ok, we have a valid Scala /lib
+# Gather jars for the classpath
+scala_lib_contents="$(gatherJars $SCALALIB $SEP)"
+if [[ -n "$scala_lib_contents" ]]; then
+    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $scala_lib_contents $SEP)"
 fi
 
 
 
-# Put the sake home on the toolpath
-# if SAKELIB.isEmpty and !SAKE_HOME.isEmpty and SAKE_HOME.exists and
-# .isReadable
-if [[ -z "$SAKELIB" && -n "$SAKE_HOME" && -r "$SAKE_HOME/lib/sake.jar" ]]; then
-    SAKELIB="$SAKE_HOME/lib/sake.jar"
+# Gather local jars
+local_lib_contents="$(gatherJars $SCRIPT_HOME/lib $SEP)"
+if [[ -n "$local_lib_contents" ]]; then
+    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $local_lib_contents $SEP)"
 fi
 
-# If SAKELIB is still empty, maybe /lib has provided
-if [[ -z "$SAKELIB" && -r "$SCRIPT_HOME/lib/sake.jar" ]]; then
-    SAKELIB="$SCRIPT_HOME/lib/sake.jar"
-fi
 
-# We give up!
-if [[ -z "$SAKELIB" ]]; then
-    echo "This script must have the variable SAKE_HOME pointed at a Sake .jar library (no .jar found in /lib)"
-    onExit
-fi
+# If a jar was found locally, job done
+if [[ ! -r "$SCRIPT_HOME/lib/sake.jar" ]]; then
 
-if [[ -z "$TOOL_CLASSPATH" ]]; then
-    TOOL_CLASSPATH="$SAKELIB"
-else
-    TOOL_CLASSPATH="${TOOL_CLASSPATH}${SEP}${SAKELIB}"
+    # Ok, where do we find a jar?
+    # if SAKELIB.isEmpty and !SAKE_HOME.isEmpty and SAKE_HOME.exists
+    # and .isReadable
+    if [[ -z "$SAKELIB" && -n "$SAKE_HOME" && -r "$SAKE_HOME/lib/sake.jar" ]]; then
+	SAKELIB="$SAKE_HOME/lib/sake.jar"
+    fi
+
+
+    # Ok, if SAKE_HOME or SAKELIB have found a path we load the jar.
+    if [[ -n "$SAKELIB" ]]; then
+	TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $SAKELIB $SEP)"
+    else
+	# No SAKELIB? We give up!
+	echo "This script must have the variable SAKE_HOME pointed at a Sake distribution, or be *in* a Sake distribution (with a sake.jar found in /lib)"
+	onExit
+    fi
 fi
 
 
 # If none exist, set some Java opts
 [[ -n "$JAVA_OPTS" ]] || JAVA_OPTS="-Xmx256M -Xms32M"
 
-# break out -D and -J options and add them to JAVA_OPTS as well
-# so they reach the underlying JVM in time to do some good.  The
-# -D options will be available as system properties.
+# break out -D and -J options and add them to JAVA_OPTS as well so
+# they reach the underlying JVM in time to do some good.  The -D
+# options will be available as system properties.
 declare -a java_args
 declare -a scala_args
 
@@ -247,8 +340,8 @@ if [[ -z "$cygwin$mingw" ]]; then
     usebootcp="true"
 fi
 
-# If using the boot classpath, also pass an empty classpath
-# to java to suppress "." from materializing.
+# If using the boot classpath, also pass an empty classpath to java to
+# suppress "." from materializing.
 classpathArgs () {
     if [[ -n $usebootcp ]]; then
 	echo "-Xbootclasspath/a:$TOOL_CLASSPATH -classpath \"\""
@@ -257,8 +350,8 @@ classpathArgs () {
     fi
 }
 
-# SI-8358, SI-8368 -- the default should really be false,
-# but I don't want to flip the default during 2.11's RC cycle
+# SI-8358, SI-8368 -- the default should really be false, but I don't
+# want to flip the default during 2.11's RC cycle
 OVERRIDE_USEJAVACP="-Dscala.usejavacp=true"
 
 while [[ $# -gt 0 ]]; do
@@ -306,10 +399,6 @@ done
 # reset "$@" to the remaining args
 set -- "${scala_args[@]}"
 
-# if JAVACMD.isEmpty and !JAVA_HOME.isEmpty and JAVA_HOME.exists and .isExecutable
-if [[ -z "$JAVACMD" && -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
-    JAVACMD="$JAVA_HOME/bin/java"
-fi
 
 # note that variables which may intentionally be empty must not
 # be quoted: otherwise an empty string will appear as a command line
@@ -319,10 +408,7 @@ execCommand \
     $JAVA_OPTS \
     "${java_args[@]}" \
     $(classpathArgs) \
-    -Dssc.runner.home="$SCRIPT_HOME" \
-    -Djava.home="$JAVA_HOME" \
-    -Dscala.home="$SCALA_HOME" \
-    -Dsake.home="$SAKELIB" \
+    -Dssc.isjdk="$is_JDK" \
     $OVERRIDE_USEJAVACP \
     "$EMACS_OPT" \
     $WINDOWS_OPT \

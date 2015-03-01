@@ -21,6 +21,7 @@ object Runner
 
   val cwd : Path = Paths.get(".").toAbsolutePath().normalize()
 
+/*
   val ccd: Path = {
     val ccdStr = java.lang.System.getProperty("ssc.runner.home")
     if (ccdStr == null) {
@@ -28,7 +29,7 @@ object Runner
     }
     else new java.io.File(ccdStr).toPath
   }
-
+*/
 
 
   ///////////////////////////

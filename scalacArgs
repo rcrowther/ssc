@@ -57,6 +57,7 @@
 /home/rob/Code/sake/src/main/ssc/ProgressNotifier.scala
 /home/rob/Code/sake/src/main/ssc/Version.scala
 /home/rob/Code/sake/src/main/ssc/ParseCommandLine.scala
+/home/rob/Code/sake/src/main/ssc/ProcessingRoute.scala
 /home/rob/Code/sake/src/main/ssc/Config.scala
 /home/rob/Code/sake/src/main/ssc/ParseIni.scala
 /home/rob/Code/sake/src/main/ssc/Runner.scala

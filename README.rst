@@ -22,19 +22,20 @@ The bad and the good
 
 :Good: - Java half-installable
   - makes documentation out of broken code
-  - works on many folder structures, can be asked to work many
+  - works on several folder structures, can be asked to work on many more
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
+  - Self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
-  - no JLine/FSC means more memory for everything else.
+  - no JLine/fsc means more memory for everything else.
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
-I wanted it, otherwise I wouldn't have coded it, but other people may not be interested. Still, it can be cool. Let's say you'd like to understand an extensive Scala codebase. Dive into the corner you are interested in, then run ``ssc doc``. Chances are, ``ssc`` will work out the code layout. The compile will fail, because you didn't document everything, but so what? Now you can have a clutch of Scaladoc laying out inheritance, implicits (if you need), passed values, and more.
+I wanted it, otherwise I wouldn't have coded it, but other people may not be interested. Still, it can be cool. Let's say you'd like to understand an extensive Scala codebase. Dive into the corner you are interested in, then run ``ssc doc``. Chances are, ``ssc`` will work out the code layout. The compile will fail, because you didn't document everything, but so what? Now you can have a clutch of scaladoc laying out inheritance, implicits (if you need), passed values, and more.
 
 
 Alternatives
 =============
-If you want a better, more professional tool (it seems most people are ok), in Scala source is an Ant task, ::
+If you want a more professional tool (it seems most people are ok), in Scala source is an Ant task, ::
 
     .../scala-<version>/src/scaladoc/scala/tools/ant/Scaladoc.scala
 
@@ -106,7 +107,7 @@ Adjust the script
 -----------------
 If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVM/Scala installations. If development is on `Eclipse`, you have caos.
 
-The launching script has been written to make this easy. Goto `bin/ssc`. At the top are a few annotated variables, notably,
+The launching script has been written to make this easy. As easy as I can make it. Goto `bin/ssc`. At the top are a few annotated variables, notably,
 
 JAVA_HOME=""
 
@@ -114,7 +115,7 @@ SCALA_HOME=""
 
 In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. But if you have an up-to-date Java, or a Java inside an IDE like Eclipse, point JAVA_HOME at the `/bin` folder.
 
-The same is true of Scala, and SCALA_HOME. A fully installed version should work --- for half-installed versions point SCALA_HOME at Scala's `/bin` folder.
+The same is true of Scala, and SCALA_HOME. Point it at some Scala distribution folder somewhere and it should work.
 
 
 Libraries
@@ -149,22 +150,24 @@ If ``ssc`` recognises anything in the folder, it will try to produce documentati
 
 A word about folder structures
 ------------------------------
-``ssc`` can not handle any folder structure, but it can handle many different variations. The rule is that source directories must not occupy another source  path. So this is bad, ::
+``ssc`` can not handle any folder structure, but it can handle many variations. The rule is, source directory paths must not occupy another source path. So this is bad, ::
 
     ── src
        └── test
 
-because /test is on the path of /src. This is bad, also, ::
+because /src is on the path of /test. This is bad, also, ::
 
     ── src
        └── main ── scala ── test
  
+/src is still on the path of /test.
+
 This is ok, ::
 
     ── src
        └── doc
 
-...no other source folder (no tests, no Java).
+.../doc is not a source folder (no tests, no Java).
 
 This is ok, ::
 
@@ -183,7 +186,7 @@ Type, ::
 
 to see what can be changed. If it's in the list, it can be on the commandline. Or in a `build.ssc` file (see below).
 
-Or look in the source code for the class ``Configuration``, which is definitive.
+Or look in the source code for the class ``CLSchema``, which is messy but definitive.
  
 
 Commandline
