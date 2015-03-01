@@ -218,7 +218,7 @@ object CLSchema {
   val taskSwitchSeq = Map[String, Seq[Map[String, CLSwitchOption]]](
     "bytecode" -> Seq(bytecodeSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "introspect" -> Seq(introspectSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "repl" -> Seq(outputFormatSwitch),
+    "repl" -> Seq(buildDirSwitch, outputFormatSwitch),
     // Empty compiles
     "clear" ->  Seq(buildDirSwitch, docDirSwitch, outputFormatSwitch),
     // Full cleanup

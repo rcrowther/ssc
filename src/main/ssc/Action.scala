@@ -96,6 +96,29 @@ final class Action(
   private def libPath : Option[Path] = dirFind("libDir", config.asSeq("libDir"))
 
 
+  /** A Route for the build path main folder.
+    *
+    * Like the other routes, tests if required folders exist, in this
+    * case, the buildPathMain (the others do not need to know if this
+    * exists, they will create if necessary).
+    *
+    * Used for tasks which do not need recompilation, as the tool may
+    * stand alone, e.g. repl.
+    */
+  private def buildPathMainRoute()
+      : Option[Path] =
+  {
+    val bpO = buildPathMain
+    if (bpO != None && Dir.exists(bpO.get)) bpO
+    else None
+  }
+
+
+
+
+  /////////////////////
+  // General Helpers //
+  /////////////////////
 
   /** Returns an iterable of all entry files in a directory.
     *
@@ -758,9 +781,9 @@ final class Action(
   /** Empties the build dir (so all compiled material).
     */
   def clear() {
-    val bpb = buildPathBase.get
-    traceInfo(s"clearing build directory $bpb...")
-    Dir.clear(bpb)
+    val bp = buildPathBase.get
+    traceInfo(s"clearing build directory $bp...")
+    Dir.clear(bp)
   }
 
 
@@ -1346,60 +1369,64 @@ final class Action(
   }
 
 
-/*
+
+
+
+
+
+
 
 
   def repl()
+      : Boolean =
   {
+    //import scala.tools.nsc.util.{ ClassPath, ScalaClassLoader }
+    import scala.tools.nsc.Properties.{ versionString, copyrightString }
+    import scala.tools.nsc.interpreter.ILoop
+    import scala.tools.nsc._
 
 
-    println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
+    def errorFn(str: String): Boolean = {
+      Console.err println str
+      false
+    }
 
-  }
-*/
 
-import java.io.{ File }
-import scala.tools.nsc.util.{ ClassPath, ScalaClassLoader }
-import scala.tools.nsc.Properties.{ versionString, copyrightString }
-import scala.tools.nsc.GenericRunnerCommand._
-import scala.tools.nsc.GenericRunnerCommand
-import scala.tools.nsc.interpreter.ILoop
-import scala.tools.nsc._
+    //TODO: This is inheriting the parent load context anyhow.
+    // So the only question is, can we get it loaded?
+    // Not a priority.
+    // See sbt/compile/interface/src/main/scala/xsbt
+    // ConsoleInterface
 
-  def errorFn(str: String): Boolean = {
-    Console.err println str
-    false
-  }
+    val bpO = buildPathMainRoute
 
-  def errorFn(ex: Throwable): Boolean = {
-    ex.printStackTrace()
-    false
-  }
+    if (bpO == None) {
+      traceWarning("no build found when starting Repl")
+    }
+    else {
+      val bp = bpO.get
+      traceInfo(s"REPL started, build path ${bp.toString}")
+    }
 
-  def repl()
-: Boolean =
-  {
-println("home:" + System.getProperty("java.home"))
-val args = Array[String](
-""
-)
 
+    val args = Array[String]()
     val command = new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
-val settings = command.settings
-    def sampleCompiler = new Global(settings) 
+    val settings = command.settings
+    def sampleCompiler = new Global(settings)
 
     if (!command.ok) return errorFn("\n" + command.shortUsageMsg)
     else if (settings.version) return errorFn("Scala code runner %s -- %s".format(versionString, copyrightString))
     else if (command.shouldStopWithInfo)  return errorFn(command getInfoMessage sampleCompiler)
 
-//settings.loadfiles.isDefault = false
-//settings.loadfiles.value = Nil
-//settings.Xnojline = true
-println(s"settings.loadfiles.isDefault: ${settings.loadfiles.isDefault}")
-    println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
-      //settings.Yreplsync.value = true
-val i : Boolean = new ILoop process settings
-i 
+    //settings.loadfiles.isDefault = false
+    //settings.loadfiles.value = Nil
+    //settings.Xnojline = true
+    //settings.Yreplsync.value = true
+    //println(s"settings.loadfiles.isDefault: ${settings.loadfiles.isDefault}")
+    //println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
+
+    val i : Boolean = new ILoop process settings
+    i
   }
 
 
@@ -1620,7 +1647,7 @@ i
         }
       }
     }
-//sys.exit(1)
+    //sys.exit(1)
   }
 
 }//Action

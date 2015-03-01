@@ -264,13 +264,13 @@ fi
 # (visualvm, I don't yet know).
 # Look for lib/tools.jar, it's a good candidate to tell us we have a
 # JDK
-is_JDK="false"
+is_jdk="false"
 if [[ -n "$JAVA_HOME" && -r "$JAVA_HOME/lib/tools.jar" ]]; then
     # Alright, we're picking and choosing the JDK material.
     TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/tools.jar $SEP)"
     TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/jconsole.jar $SEP)"
     TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/missioncontrol/mc.jar $SEP)"
-    is_JDK="true"
+    is_jdk="true"
 fi
 
 
@@ -408,7 +408,7 @@ execCommand \
     $JAVA_OPTS \
     "${java_args[@]}" \
     $(classpathArgs) \
-    -Dssc.isjdk="$is_JDK" \
+    -Dssc.isjdk="$is_jdk" \
     $OVERRIDE_USEJAVACP \
     "$EMACS_OPT" \
     $WINDOWS_OPT \

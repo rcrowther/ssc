@@ -24,7 +24,7 @@ The bad and the good
   - makes documentation out of broken code
   - works on several folder structures, can be asked to work on many more
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
-  - Self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
+  - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
   - no JLine/fsc means more memory for everything else.
 

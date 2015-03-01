@@ -21,15 +21,15 @@ object Runner
 
   val cwd : Path = Paths.get(".").toAbsolutePath().normalize()
 
-/*
-  val ccd: Path = {
-    val ccdStr = java.lang.System.getProperty("ssc.runner.home")
+
+  val isJDK: Boolean = {
+    val ccdStr = java.lang.System.getProperty("ssc.isjdk")
     if (ccdStr == null) {
-      throw new Exception("The system property 'ssc.runner.home' is not available.")
+      throw new Exception("The system property 'ssc.isjdk' is not available.")
     }
-    else new java.io.File(ccdStr).toPath
+    else (ccdStr == "true")
   }
-*/
+
 
 
   ///////////////////////////
