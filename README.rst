@@ -15,18 +15,17 @@ The bad and the good
 --------------------
 
 :Bad: - *Not for Windows*!
+  - Not of cygwin or mingw either
   - only works from commandline
   - not properly built or buildable
-  - no JLine means no fsc
   - probably not sorted, as of the time of writing
 
 :Good: - Java half-installable
-  - makes documentation out of broken code
+  - makes documentation from broken code
   - works on several folder structures, can be asked to work on many more
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
   - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
-  - no JLine/fsc means more memory for everything else.
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
@@ -59,6 +58,8 @@ Needs
 Java7 and Scala. Both standard, OpenJDK is fine.
 
 Much of ``ssc`` works from shell invocation. It can use several in-system tools. If the host computer has ``graphviz``, ``ssc`` can leverage scaladoc to add inheritance diagrams. ``ssc`` also likes ``grep`` and ``tree``.
+
+*NEW* The shoddiest fsc implementation known to code! But it works!
 
 
 Building

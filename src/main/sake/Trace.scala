@@ -10,6 +10,7 @@ trait Trace
 
   private val GREEN = "\u001b[32m"
   private val MAGENTA = "\u001b[35m"
+  //private val BLUE = "\u001b[34m"
   private val CYAN = "\u001b[36m"
   private val YELLOW = "\u001b[33m"
   private val RED = "\u001b[31m"
@@ -18,7 +19,7 @@ trait Trace
   private val DIMWHITE = "\u001b[37;2m"
   private val BOLDWHITE = "\u001b[1m"
   private val RESET = "\u001b[0m"
-
+  //private val BOLD = "\u001b[1m"
 
   /** Define if verbose prints are to go to the output.
     */
@@ -50,14 +51,27 @@ trait Trace
     }
   }
 
+
+
   /* Write info output to standard output stream.
    *
    * No newline.
    */
-  def traceInfoPrint(line: String)
+  def traceInfoPrint(str: String)
   {
-    if (noColor) print(line)
-    else print(GREEN + line + WHITE)
+    if (noColor) print(str)
+    else print(GREEN + str + WHITE)
+  }
+
+  /* Write info output to standard output stream.
+   *
+   * No newline. *Always outputs*. Intended for commandlines and
+   * similar activity.
+   */
+  def traceTerminalPrompt(str: String)
+  {
+      if (noColor) print(str)
+      else print("\u001b[1m\u001b[34m" + str + RESET)
   }
 
   /* Write advice output to standard output stream.

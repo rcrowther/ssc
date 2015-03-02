@@ -8,6 +8,8 @@ import sake.util.file._
 import sake.util.executable.FindExecutable
 
 import java.util.regex.Pattern
+import ssc.action._
+
 
 
 /** Carries actions ssc can make.
@@ -567,7 +569,8 @@ final class Action(
   // jar does not
   // scalatest does not?
   def doScalaCompile(
-    processingRoute: ProcessingRoute
+    processingRoute: ProcessingRoute,
+    fscOpts: Option[FscOpts]
   )
       : Boolean =
   {
@@ -584,13 +587,20 @@ final class Action(
       Dir.clear(buildPath)
     }
 
+    val command =
+      if (fscOpts != None) "fsc"
+      else "scalac"
 
     // Build some compile options
     val b = buildScalaStandardOptions(
-      "scalac",
+      command,
       Some(buildPath),
       true
     )
+
+    if (fscOpts != None) {
+      fscOpts.get.addOpts(b)
+    }
 
     appendCompileOptions(b)
     //println("scalac line:" + b.result())
@@ -616,7 +626,12 @@ final class Action(
         "compiling",
         22
       )
-
+      /*
+       val test = 
+       """java -Xmx256M -Xms32M -Xbootclasspath/a:/home/rob/Deployed/scala-2.11.4/lib/akka-actor_2.11-2.3.4.jar:/home/rob/Deployed/scala-2.11.4/lib/config-1.2.1.jar:/home/rob/Deployed/scala-2.11.4/lib/jline-2.12.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-actors-2.11.0.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-actors-migration_2.11-1.1.0.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-compiler.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-continuations-library_2.11-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-continuations-plugin_2.11.4-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-library.jar:/home/rob/Deployed/scala-2.11.4/lib/scalap-2.11.4.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-parser-combinators_2.11-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-reflect.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-swing_2.11-1.0.1.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-xml_2.11-1.0.2.jar:/home/rob/Deployed/jdk1.7.0_71/lib/tools.jar -classpath "" -Dscala.home=/home/rob/Deployed/scala-2.11.4 -Dscala.usejavacp=true -Denv.emacs= scala.tools.nsc.Main -d /home/rob/Code/sake/build/main/scala/ssc /home/rob/Code/sake/src/main/ssc/action/IntrospectVM.scala
+       """
+       scala.tools.nsc.Main(test)
+       */
       val (retCode, stdErr, stdOut) = shCatch (b.result())
 
       pb.stop()
@@ -630,6 +645,94 @@ final class Action(
       else true
     }
   }
+
+
+
+  /** Archives source files to a jar.
+    *
+    * This is the raw action, and should be protected against missing
+    * sources, etc.
+    *
+    * @return true if a compile succeeded, else false.
+    */
+  def doJar()
+      : Boolean =
+  {
+    // Create a manifest file
+    val b = Seq.newBuilder[String]
+
+    b += "Manifest-Version: 1.0"
+    b += "Implementation-Version: " + config("appVersion")
+    b += "Specification-Title: " + config("appName")
+    b += "Specification-Version: " + config("appVersion")
+
+    if (!config("classpaths").isEmpty) {
+      b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
+    }
+
+    if (!config("mainClass").isEmpty) {
+      b += "Main-Class: " + config("mainClass")
+    }
+
+
+    Entry.write(
+      cwd.resolve("MANIFEST.MF"),
+      b.result()
+    )
+
+
+    // TODO: permissions?
+
+
+    // Now make a jar file
+    // NB: the 'jar' tool silenty replaces existing
+    // jars, which is what we would like.
+    b.clear
+    b += "jar"
+
+    var switches = "cfm"
+    if (config.asBoolean("verboseTools")) {
+      switches = switches + "v"
+    }
+    if (config.asBoolean("uncompressed")) {
+      switches = switches + "0"
+    }
+    b += switches
+
+    // TODO: Scala version in title?
+    val jarFileName =
+      if (config.asBoolean("noVersionTitle")) {
+        config("appName") + ".jar"
+      }
+      else config("appName") + "_" + config("appVersion") + ".jar"
+
+    b += jarFileName
+
+    b += "MANIFEST.MF"
+
+
+
+    // NB: 'relative path'  probe down to include Scala and Java files.
+    compiledClasspaths.foreach { p =>
+      // Also, the all-important '.'
+      b += "-C"
+      b += p.toString
+      b += "."
+    }
+
+    traceInfo("building jar...")
+    val (retCode, stdErr, stdOut) = shCatch (b.result())
+
+    // Cleanup
+    Entry.delete(cwd.resolve("MANIFEST.MF"))
+
+    if (retCode != 0) {
+      traceWarning("jar creation errors")
+      false
+    }
+    else true
+  }
+
 
 
   /////////////
@@ -698,7 +801,7 @@ final class Action(
       true
     }
     else {
-      assertCompile(requester, processingRoute)
+      assertCompile(requester, processingRoute, None)
     }
   }
 
@@ -709,13 +812,14 @@ final class Action(
     */
   def assertCompile(
     requester: String,
-    processingRoute: ProcessingRoute
+    processingRoute: ProcessingRoute,
+    fscOpts: Option[FscOpts]
   )
       : Boolean =
   {
     if (sourcePathExists(requester, processingRoute)) {
       traceInfo(s"$requester is forcing compile...")
-      doScalaCompile(processingRoute)
+      doScalaCompile(processingRoute, fscOpts)
     }
     else false
   }
@@ -1141,7 +1245,6 @@ final class Action(
     */
   def tree() {
 
-
     val e = FindExecutable("tree").find(
       false,
       true,
@@ -1201,13 +1304,166 @@ final class Action(
     val r = scalaRoute
 
     if (sourcePathExists("compile", r)) {
-      doScalaCompile(r)
+      doScalaCompile(r, None)
     }
   }
 
 
 
 
+  // TODO: Such a hulk it could be traited?
+  def fscCompile() {
+
+    val resetCommand =
+      if (config.asBoolean("verboseTools")) Seq("fsc", "-reset")
+      else Seq("fsc", "-verbose", "-reset")
+
+    val stopCommand =
+      if (config.asBoolean("verboseTools")) Seq("fsc", "-shutdown")
+      else Seq("fsc", "-verbose", "-shutdown")
+
+    //
+    // Actions
+
+    def fscHelp
+    {
+      trace("Options include:")
+      trace("  (compile)[Enter] to recompile")
+      trace("  j(ar)[Enter] to recompile and generate a jar")
+      trace("  c(lear)[Enter] to clear (also empties fsc cache)")
+      trace("  h(elp)[Enter] to print this message")
+      trace("  q(uit)[Enter] to quit")
+    }
+
+    def fscClear()
+    {
+      clear()
+
+      // Reset the server
+      val (retCode, stdErr, stdOut) = shCatch (resetCommand)
+      trace(stdErr)
+      trace(stdOut)
+
+      if (retCode != 0) {
+        traceWarning("Errors resetting fsc?")
+      }
+    }
+
+    def fscCompile(r: ProcessingRoute, fscOpts: FscOpts) {
+      traceInfo("compiling...")
+      doScalaCompile(r, Some(fscOpts))
+    }
+
+    def fscJar(r: ProcessingRoute, fscOpts: FscOpts)
+    {
+      traceInfo("compiling with jar...")
+      // ensure compiled classes exist
+      if(assertCompile("fsc 'jar' request", r, Some(fscOpts))) {
+        doJar()
+      }
+    }
+
+
+    //
+    // Libdata test
+
+    def libData
+        : String =
+    {
+      val r = dirEntryPaths(libPath, ".jar").mkString(":")
+      r
+    }
+
+    val cachedLibData = libData
+    def libraryChanged
+        : Boolean =
+    {
+      val bad = {libData != cachedLibData}
+      if (bad) {
+        traceInfo("the contents of /lib have changed. FSC can not continue, and will go to shutdown")
+        traceAdvice("(this is not a project error. Fsc can be restarted immediately)")
+      }
+      bad
+    }
+
+
+    // Get the basic scala routes
+    val r = scalaRoute
+
+    if (sourcePathExists("compile", r)) {
+      val fscOpts = new FscOpts(maxIdle = 0)
+
+
+
+
+      // NB: if the compile fails, initially or later,
+      // we still lunge ahead...
+      var cont = true
+      traceInfo("starting fsc...")
+      doScalaCompile(r, Some(fscOpts))
+      //TODO: Now, how are we going to test this?
+
+
+      while(cont) {
+        val in = new java.util.Scanner(System.in)
+        traceTerminalPrompt("fsc: ")
+
+        // Yes we need to catch exceptions.
+        // CNTRL-D, for example, throws the scanner.
+        val line =
+          try {
+            in.nextLine().trim
+          }
+          catch {
+            case e: Exception => "?"
+          }
+
+        if(libraryChanged) {
+          cont = false
+        }
+        else {
+
+          line match {
+            case "" => fscCompile(r, fscOpts)
+            case "compile" => fscCompile(r, fscOpts)
+
+            case "j" => fscJar(r, fscOpts)
+            case "jar" => fscJar(r, fscOpts)
+
+            case "c" => fscClear()
+            case "clear" => fscClear()
+
+            case "h" => fscHelp
+            case "help" => fscHelp
+
+            case "q" => {cont = false}
+            case "quit" => {cont = false}
+
+            case x => {
+              // TODO: Currently doesn't drop the prompt if non-verbose.
+              // But warnings should go on std err?
+              traceWarning(s"Unknown command:$x")
+              traceAdvice("h[Enter] for help")
+              if (!verbose) trace("\n")
+            }
+          }
+        }
+      }//while
+
+      // Stop the server
+      val (retCode, stdErr, stdOut) = shCatch (stopCommand)
+      trace(stdErr)
+      trace(stdOut)
+
+      if (retCode != 0) {
+        traceWarning("Errors stopping fsc?")
+      }
+      else {
+        traceInfo("done")
+      }
+
+    }//srcpath?
+  }
 
 
   def runK()
@@ -1215,7 +1471,7 @@ final class Action(
     //NB. This only can use scala, so simpler.
     //TODO: Will it run java classes?
 
-    if(assertCompile("'run' request", scalaRoute)) {
+    if(assertCompile("'run' request", scalaRoute, None)) {
       val c = config("class")
 
       if (c.isEmpty) {
@@ -1433,12 +1689,12 @@ final class Action(
   def scalaTest()
   {
     // ensure compiled src classes exist
-    if(assertCompile("'scalaTest' 'compile sources' request", scalaRoute)) {
+    if(assertCompile("'scalaTest' 'compile sources' request", scalaRoute, None)) {
 
 
       // ensure compiled test classes exist
       val r = scalaTestRoute
-      if(assertCompile("'scalaTest' 'compile test' request", r)) {
+      if(assertCompile("'scalaTest' 'compile test' request", r, None)) {
 
         // Find the executable
         val exec: String =
@@ -1538,7 +1794,7 @@ final class Action(
     }
   }
 
-
+  //sun.tools.jconsole.JConsole
   /** Produces a library jar file.
     */
   def jar()
@@ -1547,76 +1803,13 @@ final class Action(
     val r = scalaRoute
 
     // ensure compiled classes exist
-    if(assertCompile("'jar' request", r)) {
-
-      // Create a manifest file
-      val b = Seq.newBuilder[String]
-
-      b += "Manifest-Version: 1.0"
-      b += "Implementation-Version: " + config("appVersion")
-      b += "Specification-Title: " + config("appName")
-      b += "Specification-Version: " + config("appVersion")
-
-      if (!config("classpaths").isEmpty) {
-        b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
-      }
-
-      if (!config("mainClass").isEmpty) {
-        b += "Main-Class: " + config("mainClass")
-      }
-
-
-      Entry.write(
-        cwd.resolve("MANIFEST.MF"),
-        b.result()
-      )
-
-
-      // TODO: permissions?
-
-
-      // Now make a jar file
-      // NB: the 'jar' tool silenty replaces existing
-      // jars, which is what we would like.
-      b.clear
-      b += "jar"
-
-      var switches = "cfm"
-      if (config.asBoolean("verboseTools")) {
-        switches = switches + "v"
-      }
-      if (config.asBoolean("uncompressed")) {
-        switches = switches + "0"
-      }
-      b += switches
-
-      // TODO: Scala version in title?
-      val jarFileName =
-        if (config.asBoolean("noVersionTitle")) {
-          config("appName") + "_" + config("appVersion") + ".jar"
-        }
-        else config("appName") + ".jar"
-      b += jarFileName
-
-      b += "MANIFEST.MF"
-
-
-
-      // NB: 'relative path'  probe down to include Scala and Java files.
-      compiledClasspaths.foreach { p =>
-        // Also, the all-important '.'
-        b += "-C"
-        b += p.toString
-        b += "."
-      }
-
-      traceInfo("building jar...")
-      sh (b.result())
-
-      // Cleanup
-      Entry.delete(cwd.resolve("MANIFEST.MF"))
+    if(assertCompile("'jar' request", r, None)) {
+      // Ok
+      doJar()
     }
   }
+
+
 
   def run() {
     //trace(s"action route...$taskName")
@@ -1637,6 +1830,7 @@ final class Action(
             case "findfile" => findFile()
             case "tree" => tree()
             case "compile" => compile()
+            case "fsc" => fscCompile()
             case "test" => scalaTest()
             case "doc" => doc()
             case "run" => runK()

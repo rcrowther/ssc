@@ -1,5 +1,9 @@
 I'm beginning to want before() after() and init(), and final(). Maybe.
 
+Something wrong with Trace inheritance of vals.
+
+Script launcher need reworking as per ssc launcher.
+
 Need a rename file, at least. Or move/rename.
 
 And go off returns. After all that trouble.
