@@ -271,8 +271,11 @@ object Runner
     val taskConfig = project.projectConfig(task) ++ clConfigured
 
     //Hi-ho, off we go
+// Drop the switches from the map
     val taskConfigSwitchless = taskConfig.map{case(k, v) => (k.drop(1) -> v)}
-    val runTask = new Action(task, cwd, Config(taskConfigSwitchless))
+//...then form a Config, in an Action
+    val runTask = new Action(task, cwd, Config(taskConfigSwitchless), isJDK)
+//...and run
     runTask.run()
   }
 

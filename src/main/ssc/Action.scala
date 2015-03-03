@@ -11,7 +11,6 @@ import java.util.regex.Pattern
 import ssc.action._
 
 
-
 /** Carries actions ssc can make.
   *
   * This class contains every external action `ssc` can make. It is
@@ -39,7 +38,8 @@ import ssc.action._
 final class Action(
   val taskName: String,
   val cwd: Path,
-  val config: Config
+  val config: Config,
+  val isJDK: Boolean
 )
     extends sake.Trace
     with sake.util.noThrow.Shell
@@ -597,6 +597,9 @@ final class Action(
       Some(buildPath),
       true
     )
+
+    //b += "-toolcp"
+    //b += "/home/rob/Deployed/jdk1.7.0_71/lib/tools.jar"
 
     if (fscOpts != None) {
       fscOpts.get.addOpts(b)
@@ -1466,42 +1469,6 @@ final class Action(
   }
 
 
-  def runK()
-  {
-    //NB. This only can use scala, so simpler.
-    //TODO: Will it run java classes?
-
-    if(assertCompile("'run' request", scalaRoute, None)) {
-      val c = config("class")
-
-      if (c.isEmpty) {
-        traceError("Please add classnames to a 'run' task. Use the switch -class <classname>")
-      }
-      else {
-
-        val b = buildScalaStandardOptions(
-          "scala",
-          None,
-          true
-        )
-        b += "-howtorun:object"
-        b += "-nc"
-        b += c
-        //println(s"run : ${b.result()}")
-        //val r = java.lang.Runtime.getRuntime()
-        //r.exec(b.result.toArray)
-        //r.exec("ls -l &")
-        val (retCode, stdErr, stdOut) = shCatch (b.result())
-        trace(stdErr)
-        trace(stdOut)
-
-        if (retCode != 0) {
-          traceWarning("run errors")
-        }
-      }
-    }
-  }
-
 
   /** Produces introspective output.
     */
@@ -1686,6 +1653,101 @@ final class Action(
   }
 
 
+  def runK()
+  {
+    //NB. This only can use scala, so simpler.
+    //TODO: Will it run java classes?
+
+    if(assertCompile("'run' request", scalaRoute, None)) {
+      val c = config("class")
+
+      if (c.isEmpty) {
+        traceError("Please add classnames to a 'run' task. Use the switch -class <classname>")
+      }
+      else {
+
+        val b = buildScalaStandardOptions(
+          "scala",
+          None,
+          true
+        )
+        b += "-howtorun:object"
+        b += "-nc"
+        b += c
+        //println(s"run : ${b.result()}")
+        //val r = java.lang.Runtime.getRuntime()
+        //r.exec(b.result.toArray)
+        //r.exec("ls -l &")
+        val (retCode, stdErr, stdOut) = shCatch (b.result())
+        trace(stdErr)
+        trace(stdOut)
+
+        if (retCode != 0) {
+          traceWarning("run errors")
+        }
+      }
+    }
+  }
+
+
+  def vms()
+  {
+    if(!isJDK) {
+      traceWarning("This command is not available")
+      traceAdvice("  (the runner could not find the launcher 'jps' in a JDK)")
+    }
+    else {
+
+      // Get the data
+      val (retCode, stdErr, stdOut) = shCatch (
+        Seq("jps")
+      )
+
+
+      //println(s"scalatest line: ${b.result()}")
+      if (retCode != 0) {
+        trace(stdErr)
+        traceError("errors from 'jps'?")
+      }
+      else {
+        val origLines = stdOut.split("\n")
+        val splitLines: Seq[(String, String)] =
+          origLines.map{ l =>
+            val sl = l.split(" ", 2)
+            (sl(0), sl(1))
+          }
+
+
+        val b = new StringBuilder()
+
+        //make a header
+        if (!noColor) b ++= "\u001b[1m"
+        val col1 = "VMID"
+        val col2 = "Name"
+        b ++= col1
+        b ++= " " * {8 - col1.size}
+        b ++= col2
+        if (!noColor) b ++= "\u001b[0m"
+        b ++= "\n"
+
+        // add the data
+        splitLines.foreach { case(vmid, name) =>
+          b ++= vmid
+          b ++= " " * {8 - vmid.size}
+          b ++=  name
+          b ++= "\n"
+        }
+
+
+        if (splitLines.isEmpty) {
+          traceInfo("  ** no results **")
+        }
+        else trace(b.result())
+      }
+    }
+  }
+
+
   def scalaTest()
   {
     // ensure compiled src classes exist
@@ -1794,7 +1856,7 @@ final class Action(
     }
   }
 
-  //sun.tools.jconsole.JConsole
+
   /** Produces a library jar file.
     */
   def jar()
@@ -1834,6 +1896,7 @@ final class Action(
             case "test" => scalaTest()
             case "doc" => doc()
             case "run" => runK()
+            case "vms" => vms()
             case "jar" => jar()
 
             case  _ => traceError(s"Unrecognised task? $taskName")

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+##############################################################################
+# Copyright 20015 RCrowther
+#
+# This is free software; see the distribution for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+##############################################################################
+
+## Point at a scala installation
+# Empty tries for an installed version.
+#SCALA_HOME=""
+
+
+
+#!SCALA_HOME.isEmpty 
+if [[ -n "$SCALA_HOME" ]]; then
+SCALAEXE="$SCALA_HOME/bin/scalac" 
+else
+SCALAEXE="scalac"
+fi
+
+mkdir build/main
+mkdir build/main/scala
+PWD="$(pwd)"
+echo "compiling..."
+
+
+SRCS="$(find $PWD/src/main/ | grep scala$)"
+#-exec grep \"scala$\" {}
+#echo ${SRCS}
+
+#scalac @scalacArgs
+"$($SCALAEXE -d build/main/scala -toolcp Lib/scalatest_2.11-3.0.0-SNAP2 -toolcp /home/rob/Deployed/jdk1.7.0_71/lib/tools.jar -toolcp /home/rob/Deployed/jdk1.7.0_71/lib/jconsole.jar $SRCS)"
+
+

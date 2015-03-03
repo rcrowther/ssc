@@ -230,6 +230,7 @@ object CLSchema {
     "fsc" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
+    "vms" -> Seq(sourceSwitches, outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch)
       // TOCONSIDER: Will be enabled sometime, likely
@@ -258,10 +259,8 @@ object CLSchema {
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",
     "introspect" -> "output information on classes",
     "repl" -> "start a repl (not enabled!)",
-    // Empty compiles
     "clear" -> "empty the build directory (deletes compiled files)",
-    // Full cleanup
-    "clean" -> "remove SSC material, except build.ssc and .jar files",
+    "clean" -> "remove tracable SSC material (except build.ssc and .jar files)",
     "find" -> "search for text in source files",
     "findfile" -> "search for source files in directories",
     "tree" -> "outputs a tree representation of source files",
@@ -269,6 +268,7 @@ object CLSchema {
     "fsc" -> "interactively run the fast scala compiler, fsc. Loads the compiler in memory (faster for recompiles). Try type 'help' at the prompt",
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",
+    "vms" -> "outputs identification details on local (Java) Virtual Machines",
     "doc" -> "run the scala documentation tool, scaladoc",
     "jar" -> "make a jar from compiled files (use -mainClass to create an executable)"
       // TOCONSIDER: Will be enabled sometime, likely

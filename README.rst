@@ -6,7 +6,7 @@ The Scala documenter
 ====================
 ``ssc`` is a Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
 
-``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is an amazing tool. It's good for programming, yet I have only seen one web post on it. I tired of trying to leverage it's abilities, hence, ``ssc``.
+``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is an amazing tool. I tired of trying to leverage it's abilities, hence, ``ssc``.
 
 ``ssc`` runs from the commandline. On that,
 
@@ -15,7 +15,7 @@ The bad and the good
 --------------------
 
 :Bad: - *Not for Windows*!
-  - Not of cygwin or mingw either
+  - Not for cygwin or mingw either
   - only works from commandline
   - not properly built or buildable
   - probably not sorted, as of the time of writing
@@ -26,6 +26,9 @@ The bad and the good
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
   - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
+  - It can use 'tree'. 'tree'! :)
+
+*NEW* The shoddiest fsc implementation known to code! But it works!
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
@@ -58,8 +61,6 @@ Needs
 Java7 and Scala. Both standard, OpenJDK is fine.
 
 Much of ``ssc`` works from shell invocation. It can use several in-system tools. If the host computer has ``graphviz``, ``ssc`` can leverage scaladoc to add inheritance diagrams. ``ssc`` also likes ``grep`` and ``tree``.
-
-*NEW* The shoddiest fsc implementation known to code! But it works!
 
 
 Building
@@ -114,14 +115,14 @@ JAVA_HOME=""
 
 SCALA_HOME=""
 
-In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. But if you have an up-to-date Java, or a Java inside an IDE like Eclipse, point JAVA_HOME at the `/bin` folder.
+In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. But if you have an up-to-date Java, or a Java inside an IDE, point JAVA_HOME at the `/bin` folder.
 
-The same is true of Scala, and SCALA_HOME. Point it at some Scala distribution folder somewhere and it should work.
+The same is true of Scala, and SCALA_HOME. Point it at some Scala distribution folder somewhere.
 
 
 Libraries
 ---------
-One bad start is lost dependencies for code. ``ssc`` needs to know about libraries the code uses, as ``scaladoc`` does a kind of compile. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
+One bad start is lost dependencies for code. ``ssc`` needs to know about libraries the code uses, as ``scaladoc`` does a half-compile. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
 
     libFiles = /path/to/my/library
 
@@ -261,7 +262,7 @@ Any configuration option added to this file overrides default values e.g. ::
 
 Other commands
 ----------------
-With the same intention of explaining what is going on, try this command, ::
+With the same intention of explaining what is going on, try this, ::
 
     ssc -classnames <some-package-qualified-classnames> introspect
 
