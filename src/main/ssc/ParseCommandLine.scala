@@ -4,12 +4,13 @@ import sake.support.parser.CLSwitchOption
 
 
 class ParseCommandLine(
-  val verbose: Boolean, 
+  val verbose: Boolean,
   val noColor: Boolean
-  )
+)
     extends sake.Trace
     with sake.support.parser.CLParser
 {
+
 
 
   private def processSwitches(
@@ -28,13 +29,44 @@ class ParseCommandLine(
     else Some((task, argConfig.get))
   }
 
+
+  /** Search for a task in input args, and split the args.
+    *
+    * @return tuple of (presumedSwitches, task, presumedParameters)
+    */
+  def parseForTask(inputArgs: Array[String])
+      : Option[(Array[String], String, Array[String])] =
+  {
+
+    val idx = inputArgs.indexWhere{ arg =>
+      (arg(0) != '-')
+    }
+
+    if (idx == -1) {
+      traceWarning(s"no task found?")
+      None
+    }
+    else {
+      val task = inputArgs(idx)
+      if(!Configuration.tasks.contains(task)) {
+        traceWarning(s"task not recognised '$task'")
+        None
+      }
+      else {
+        Some((inputArgs.slice(0, idx), task, inputArgs.slice(idx + 1, inputArgs.size)))
+      }
+    }
+  }
+
   /** Parse a commandline to ssc.
     *
     * The format is <options> <task>
     *
     * @param inputArgs the args themselves
-    * @param defaultConfig The config. In context of ssc, the config group associated with the task.
-    * @return if Some, a tuple of task and it's config, if None, commandline parsing failed.
+    * @param defaultConfig The config. In context of ssc, the
+    *  config group associated with the task.
+    * @return if Some, a tuple of task and it's config, if
+    *  None, commandline parsing failed.
     */
   def parse(
     inputArgs: Array[String]
@@ -42,17 +74,15 @@ class ParseCommandLine(
       : Option[(String, ConfigGroup)] =
   {
     // Parse the switches
-    val task = inputArgs.last
-    val switches = inputArgs.take(inputArgs.size - 1)
+    val rO = parseForTask(inputArgs)
 
-    if(!CLSchema.tasks.contains(task)) {
-      traceWarning(s"task not recognised '$task'")
-      None
-    }
+    if(rO == None) None
     else {
+      val (switches, task, parameters) = rO.get
       //which schema? By task.
       processSwitches(task, CLSchema.taskSwitches(task), switches)
     }
+
   }
 
 }//ParseCommandLine

@@ -78,6 +78,6 @@ object Configuration {
     * Generated from commandline switch data. See [[ssc.CLSchema]] for
     * the source material.
     */
-  val tasks : Seq[String] = CLSchema.tasks.keys.toSeq
+  val tasks : Seq[String] = CLSchema.taskSwitchSeq.keys.toSeq
 
 }//Configuration

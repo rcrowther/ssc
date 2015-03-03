@@ -285,14 +285,19 @@ object Runner
   /** Oh, you asked a question?
     */
   def main(inputArgs: Array[String]){
-    val SAKE_HOME = "/home/rob/Code/sake/target/scala-2.11/ssc_2.11-0.1.0-SNAPSHOT.jar"
-    val SCALA_HOME = "/home/rob/Deployed/scala-2.11.4/"
+    //val SAKE_HOME = "/home/rob/Code/sake/target/scala-2.11/ssc_2.11-0.1.0-SNAPSHOT.jar"
+    //val SCALA_HOME = "/home/rob/Deployed/scala-2.11.4/"
     //println(s"args:")
     //args.foreach(println)
 
+if(inputArgs.size == 0) {
+// Special case, no message, goto help
+ printHelp("")
+}
+else {
     // Filter show options
     val mainHandledOption: Option[String] = inputArgs.find{ arg =>
-      Seq("-help","-config", "-version").contains(arg)
+      Seq("-help", "-config", "-version").contains(arg)
     }
 
     if (mainHandledOption != None) {
@@ -357,7 +362,7 @@ object Runner
           clConfigured
         )
       }
-
+}
     }
   }
 

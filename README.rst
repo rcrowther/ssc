@@ -6,7 +6,7 @@ The Scala documenter
 ====================
 ``ssc`` is a Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
 
-``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is an amazing tool. I tired of trying to leverage it's abilities, hence, ``ssc``.
+``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is amazing. I tired of trying to leverage it's abilities, hence, ``ssc``.
 
 ``ssc`` runs from the commandline. On that,
 
@@ -26,9 +26,9 @@ The bad and the good
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
   - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
-  - It can use 'tree'. 'tree'! :)
+  - It can use tree. tree! :)
 
-*NEW* The shoddiest fsc implementation known to code! But it works!
+**NEW** The shoddiest fsc implementation known to code!
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
