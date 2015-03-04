@@ -996,7 +996,7 @@ final class Action(
           // Until someone digs in source, assuming '1' is 'nothing found'
           retCode match {
             case 1 => {
-              traceInfo("  ** no results **")
+              traceWarning("  ** no results **")
             }
             case _ => {
               traceWarning("run errors")
@@ -1103,7 +1103,7 @@ final class Action(
 
 
           if (subpathed.isEmpty) {
-            traceInfo("  ** no results **")
+            traceWarning("  ** no results **")
           }
           else trace(lb.result())
         }
@@ -1152,7 +1152,7 @@ final class Action(
           Pattern.compile(config("get"), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
         }
       val m = re.matcher("")
-      println (s" mchr: $m")
+      //println (s" mchr: $m")
       trav.filter(r => m.reset(getMatchRegion(r)).find())
     }
     else {
@@ -1236,7 +1236,7 @@ final class Action(
 
 
       if (subpathed.isEmpty) {
-        traceInfo("  ** no results **")
+        traceWarning("  ** no results **")
       }
       else trace(lb.result())
       
@@ -1741,7 +1741,7 @@ final class Action(
 
 
         if (splitLines.isEmpty) {
-          traceInfo("  ** no results **")
+          traceWarning("  ** no results **")
         }
         else trace(b.result())
       }
