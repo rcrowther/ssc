@@ -1,3 +1,5 @@
+Enable new Trace, and commandline reader.
+
 I'm beginning to want before() after() and init(), and final(). Maybe.
 
 Something wrong with Trace inheritance of vals.

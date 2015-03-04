@@ -1,7 +1,7 @@
 package ssc
 
 
-import sake.support.parser._
+import sake.util.parser._
 
 
 /** Contains definitions for the commandline activity of ssc.
@@ -21,16 +21,16 @@ object CLSchema {
     *
     * Is left public as we reference it in general help.
     */
-  val appdataSwitches = Map[String, CLSwitchOption](
+  val appdataSwitches : ParameteredConfig = Map(
     // Platform dependant (yes, they are)
-    "-appName" ->  ("name of this application. Used for example, to label .jar files.", "myApp", ParameterDescription.name, false, 1),
-    "-appVersion" -> ("version of this application", "0.1.SNAPSHOT", ParameterDescription.version, false, 1),
+    "-appName" ->  ("name of this application. Used for example, to label .jar files.", Seq("myApp"), ParameterDescription.name),
+    "-appVersion" -> ("version of this application", Seq("0.1.SNAPSHOT"), ParameterDescription.version),
     "-dependancies" -> ("paths to dependant applications", "",ParameterDescription.paths, true, 32),
-    "-javaPath" -> ("path to Java executable", "", ParameterDescription.path, false, 1),
-    "-scalaPath" -> ("path to Scala executable", "", ParameterDescription.path, false, 1)
+    "-javaPath" -> ("path to Java executable", Seq(""), ParameterDescription.path),
+    "-scalaPath" -> ("path to Scala executable", Seq(""), ParameterDescription.path)
   )
 
-  private val outputFormatSwitch = Map[String, CLSwitchOption](
+  private val outputFormatSwitch: ParameteredConfig = Map(
     "-verbose" -> "Output messages about what the application is doing",
     "-verboseTools" -> "Output messages from tools such as 'scalac' or 'jar'. Can be very noisy.",
     "-noColor" -> "Output without color codes"
@@ -38,7 +38,7 @@ object CLSchema {
 
 
   // clean needs docpath and dirpath, so this is seperate
-  private val buildDirSwitch = Map[String, CLSwitchOption](
+  private val buildDirSwitch: ParameteredConfig = Map(
     "-buildDir" -> ("path of the build directory", "build", ParameterDescription.path, false, 1)
   )
 
@@ -46,40 +46,40 @@ object CLSchema {
   // Task switches //
   ///////////////////
 
-  private val findSwitches = Map[String, CLSwitchOption](
-    "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1),
-    "-get" -> ("partial text match against live text (filename base or a line)", "", ParameterDescription.text, false, 1),
-    "-match" -> ("match a regex against live text (filename base or a line). Full match, anchored at text ends", "", ParameterDescription.text, false, 1),
+  private val findSwitches: ParameteredConfig = Map(
+    "-subpath" -> ("define a subpath of source to build the tree from", Seq(""), ParameterDescription.path),
+    "-get" -> ("partial text match against live text (filename base or a line)", Seq(""), ParameterDescription.text),
+    "-match" -> ("match a regex against live text (filename base or a line). Full match, anchored at text ends", Seq(""), ParameterDescription.text),
     "-hidden" -> "include hidden files",
     "-case" -> "text must match case"
   )
 
-  private val treeSwitches = Map[String, CLSwitchOption](
-    "-subpath" -> ("define a subpath of source to build the tree from", "", ParameterDescription.path, false, 1),
+  private val treeSwitches: ParameteredConfig = Map(
+    "-subpath" -> ("define a subpath of source to build the tree from", Seq(""), ParameterDescription.path),
     "-dir" -> "output directories only",
-    "-get" -> ("partial text match against live text (filename base or a line). Case-sensitve", "", ParameterDescription.text, false, 1),
+    "-get" -> ("partial text match against live text (filename base or a line). Case-sensitive", Seq(""), ParameterDescription.text),
     "-hidden" -> "include hidden files ('tree' can not find hidden Unix files - preceeded with a dot - with or without this switch)"
   )
 
-  private val sourceSwitches = Map[String, CLSwitchOption](
-    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src", "scala", "."), ParameterDescription.path, false, 1),
-    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java", "java"), ParameterDescription.path, false, 1),
-    "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path, false, 1),
+  private val sourceSwitches: ParameteredConfig = Map(
+    "-scalaSrcDir" -> ("path to Scala source files", Seq("src/main/scala","src/scala","src/main","src", "scala", "."), ParameterDescription.path),
+    "-javaSrcDir" -> ("path to Java source files", Seq("src/main/java","src/java", "java"), ParameterDescription.path),
+    "-scalaTestDir" -> ("path to Scala test files", Seq("src/test/scala", "src/test", "test"), ParameterDescription.path),
     "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1)
   )
 
   private val compileSwitches = {
     sourceSwitches ++
-    Map[String, CLSwitchOption](
+    Map[String, ParameteredOption](
       /** The encoding used by source files
         *
         * Note: Nothing to do with document output.
         */
-      "-charset" -> ("charset of source documents", Seq("UTF-8"), ParameterDescription.encoding, false, 1),
+      "-charset" -> ("charset of source documents", Seq("UTF-8"), ParameterDescription.encoding),
 
 
       // Building //
-      "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths, false, 1),
+      "-libDir" -> ("paths of the library directories", Seq("lib","Lib"), ParameterDescription.paths),
 
       // scalac (compile) options //
       "-optimise" -> "faster bytecode by code analysis",
@@ -90,13 +90,13 @@ object CLSchema {
     )
   }
 
-  private val docDirSwitch = Map[String, CLSwitchOption](
+  private val docDirSwitch: ParameteredConfig = Map(
     // scaladoc options //
     "-docDir" -> ("path to documentation directory", "Doc", ParameterDescription.path, false, 1)
   )
 
 
-  private val docSwitches = Map[String, CLSwitchOption](
+  private val docSwitches: ParameteredConfig = Map(
 
     // doc compilation
     /** No prefixes for types.
@@ -132,7 +132,7 @@ object CLSchema {
       *
       * A line of text. Avoid HTML?
       */
-    "-title" -> ("main title of the documentation", "Scala project",ParameterDescription.text, false, 1),
+    "-title" -> ("main title of the documentation", Seq("Scala project"), ParameterDescription.text),
 
     /** A root document for the documentation.
       *
@@ -145,7 +145,7 @@ object CLSchema {
       * document seems to be rarely viewed. Try putting something
       * silly there and see if anyone notices.
       */
-    "-rootdoc" -> ("point at a text document describing the application's root package", Seq("src/main/scala/rootdoc.txt,src/main/rootdoc.txt","src/rootdoc.txt","rootdoc.txt"), ParameterDescription.file, false, 1),
+    "-rootdoc" -> ("point at a text document describing the application's root package", Seq("src/main/scala/rootdoc.txt,src/main/rootdoc.txt","src/rootdoc.txt","rootdoc.txt"), ParameterDescription.file),
 
     /** A footer comment to scaladoc, usually an overall credit.
       *
@@ -157,41 +157,41 @@ object CLSchema {
 
     // Dot/diagram production //
     "-diagrams" -> ("Create inheritance diagrams for classes, traits and packages"),
-    "-dotPath" -> ("path to the dot executable, which produces the diagrams (ssc will guess, but the path can be entered explicitly here)", "", ParameterDescription.path, false, 1),
-    "-dotRestarts" -> ("number of times to restart a malfunctioning dot process before abandoning diagram production (default: 5)", "5", ParameterDescription.int, false, 1),
-    "-dotTimeout" -> ("the timeout before the dot util is forcefully closed, in seconds (default: 10)", "10",ParameterDescription.int, false, 1),
-    "-dotMaxClasses" -> ("The maximum number of superclasses or subclasses to show in a diagram (default: 8)", "8", ParameterDescription.int, false, 1),
+    "-dotPath" -> ("path to the dot executable, which produces the diagrams (ssc will guess, but the path can be entered explicitly here)", Seq(""), ParameterDescription.path),
+    "-dotRestarts" -> ("number of times to restart a malfunctioning dot process before abandoning diagram production (default: 5)", Seq("5"), ParameterDescription.int),
+    "-dotTimeout" -> ("the timeout before the dot util is forcefully closed, in seconds (default: 10)", Seq("10"), ParameterDescription.int),
+    "-dotMaxClasses" -> ("The maximum number of superclasses or subclasses to show in a diagram (default: 8)", Seq("8"), ParameterDescription.int),
     "-dotMaxImplicits" -> ("The maximum number of implicitly converted classes to show in a diagram (default: 2)", "2", ParameterDescription.int, false, 1)
   )
 
 
 
 
-  private val scalaTestSwitches = Map[String, CLSwitchOption](
-    "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", "", ParameterDescription.path, false, 1),
-    "-to" -> ("where output goes. One of 'gui', 'out', 'err' (default: out)", "", ParameterDescription.strCode, false, 1),
-    "-suite" -> ("specify a suite to run", "", ParameterDescription.text, false, 1),
-    "-suiteFrag" -> ("a fragment of path used to find a set of suites", "", ParameterDescription.text, false, 1),
-    "-name" -> (" specify a test to run", "", ParameterDescription.className, false, 1),
-    "-nameFrag" -> ("a fragment of name used to find a set of tests", "", ParameterDescription.text, false, 1)
+  private val scalaTestSwitches: ParameteredConfig = Map(
+    "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", Seq(""), ParameterDescription.path),
+    "-to" -> ("where output goes. One of 'gui', 'out', 'err' (default: out)", Seq(""), ParameterDescription.strCode),
+    "-suite" -> ("specify a suite to run", Seq(""), ParameterDescription.text),
+    "-suiteFrag" -> ("a fragment of path used to find a set of suites", Seq(""), ParameterDescription.text),
+    "-name" -> (" specify a test to run", Seq(""), ParameterDescription.className),
+    "-nameFrag" -> ("a fragment of name used to find a set of tests", Seq(""), ParameterDescription.text, false, 1)
 
   )
 
-  private val jarSwitches = Map[String, CLSwitchOption](
+  private val jarSwitches: ParameteredConfig = Map(
     "-classpaths" -> ("add classpaths to the manifest", "", ParameterDescription.paths, true, 64),
-    "-mainClass" -> ("specify a main class for an executable file", "", ParameterDescription.className, false, 1),
+    "-mainClass" -> ("specify a main class for an executable file", Seq(""), ParameterDescription.className),
     "-noVersionTitle" -> ("the jar name will be the name of the app only"),
     "-uncompressed" -> ("the resulting jar will not be compressed")
   )
 
 
-  private val introspectSwitches = Map[String, CLSwitchOption](
+  private val introspectSwitches: ParameteredConfig = Map(
     "-private" -> "print private definitions",
     "-classes" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.classNames, true, 64)
   )
 
 
-  private val bytecodeSwitches = Map[String, CLSwitchOption](
+  private val bytecodeSwitches: ParameteredConfig = Map(
     "-methodfields" -> ("print field (variables) tables in methods", "false"),
     "-public" -> ("print public definitions", "false"),
     "-protected" -> ("print protected definitions", "false"),
@@ -201,7 +201,7 @@ object CLSchema {
     "-classes" -> ("classnames to introspect", Seq.empty[String], ParameterDescription.paths, true, 64)
   )
 
-  private val runSwitches = Map[String, CLSwitchOption](
+  private val runSwitches: ParameteredConfig = Map(
     "-class" -> ("specify a class to run", "", ParameterDescription.className, false, 1)
       //"-noGuess" -> ("do not try to guess packaging", "false")
   )
@@ -215,7 +215,7 @@ object CLSchema {
 
   // NB. 'outputFormatSwitch' should be in every task, as the runner
   // uses some of the values too, from a quick parse.
-  val taskSwitchSeq = Map[String, Seq[Map[String, CLSwitchOption]]](
+  val taskSwitchSeq = Map[String, Seq[ParameteredConfig]](
     "bytecode" -> Seq(bytecodeSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "introspect" -> Seq(introspectSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "repl" -> Seq(buildDirSwitch, outputFormatSwitch),
@@ -242,9 +242,9 @@ object CLSchema {
     *
     * Generated from `taskSwitchSeq`, *not* `tasks`
     */
-  val taskSwitches :  Map[String, Map[String, CLSwitchOption]] =
+  val taskSwitches :  Map[String, ParameteredConfig] =
     taskSwitchSeq.map{ case(k, v) =>
-      val vt = (Map.empty[String, CLSwitchOption] /: v) (_ ++ _)
+      val vt = (Map.empty[String, ParameteredOption] /: v) (_ ++ _)
       (k -> vt)
     }
 
@@ -255,7 +255,7 @@ object CLSchema {
     * parser can recognise. Do not use for commandline parsing. Or
     * risk mind-warp.
     */
-  val tasks = Map[String, CLArgOption](
+  val tasks: UnParameteredConfig = Map(
     "bytecode" -> "output bytecode from classes (can be hard to trace from Scala code. Can be pointed at Scala '$' class fragments)",
     "introspect" -> "output information on classes",
     "repl" -> "start a repl (not enabled!)",

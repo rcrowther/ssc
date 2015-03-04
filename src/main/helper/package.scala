@@ -9,6 +9,6 @@ package sake
 
   *  - Shell - some Ruby-like commands for invokation through a shell.
   */
-package object util {
+package object helper {
 
 }//support

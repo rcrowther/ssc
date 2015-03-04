@@ -5,15 +5,15 @@ import java.nio.file.Paths
 import java.nio.file.Path
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import sake.util.file._
-
+import sake.helper.file._
+import sake.util.parser.HelpBuilder
 
 
 // TODO need startup script to run without Scala
 object Runner
-    extends sake.Trace
-    with sake.support.parser.CLParser
+    extends sake.util.io.Trace
 {
+
   // For starters...
   var noColor: Boolean = false
   var verbose: Boolean = false
@@ -41,59 +41,59 @@ object Runner
     * There is no need to pass these items to projects, so their help
     * is added away from the main switch values.
     */
-  private def addMainhandledHelp(b: StringBuilder)
+  private def addMainhandledHelp(b: HelpBuilder)
   {
-    addHelpItem(b, "-mavenStrict", "sets default configuration to Maven conventions (/src/main/scala etc.)")
-    addHelpItem(b, "-config", "output the config (the default with file-modifications")
-    addHelpItem(b, "-version", "output version information")
-    addHelpItem(b, "-help", "output this message")
+    b.addItem( "-mavenStrict", "sets default configuration to Maven conventions (/src/main/scala etc.)")
+    b.addItem( "-config", "output the config (the default with file-modifications")
+    b.addItem( "-version", "output version information")
+    b.addItem( "-help", "output this message")
   }
 
 
   /** Outputs help.
     * 
-    * Can sub-categorise help using the taskNme.
+    * Can sub-categorise help using the task name.
     * 
     * @param taskName name of a task, causes help to
     *  specialise it's string output.
     */
   def printHelp(taskName: String)
   {
-    val b = new StringBuilder
+    val b = HelpBuilder()
 
     if (!taskName.isEmpty) {
       val tss = CLSchema.taskSwitchSeq(taskName)
       if(tss.isEmpty) {
-        addHelpUsage(b, "ssc", taskName)
+        b.addUsage("ssc", taskName)
       }
       else {
-        addHelpUsage(b, "ssc", "<options> " + taskName)
+        b.addUsage("ssc", "<options> " + taskName)
         var first = true
         CLSchema.taskSwitchSeq(taskName).foreach{ sg =>
           if (first) {
             first = false
-            addHelp(b, "Options:", sg)
-            addHelpNewLine(b)
-            addHelpLine(b, "Other Options:")
+            b.add("Options:", sg)
+            b.addNewLine
+            b.addLine("Other Options:")
           }
           else {
-            addHelp(b, "", sg)
+            b.add("", sg)
           }
         }
         addMainhandledHelp(b)
       }
     }
     else {
-      addHelpUsage(b, "ssc", "<options> <task>")
-      addHelp(b, "Tasks:", CLSchema.tasks)
-      addHelpNewLine(b)
-      addHelp( b, "Basic Options:", CLSchema.appdataSwitches)
+      b.addUsage("ssc", "<options> <task>")
+      b.add("Tasks:", CLSchema.tasks)
+      b.addNewLine
+      b.add("Basic Options:", CLSchema.appdataSwitches)
       addMainhandledHelp(b)
-      addHelpNewLine(b)
-      addHelpLine(b,  "Options are available for each task. Try ssc -help <task>")
+      b.addNewLine
+      b.addLine("Options are available for each task. Try ssc -help <task>")
     }
 
-    printHelp(b)
+    trace(b.result())
   }
 
 
@@ -148,14 +148,14 @@ object Runner
   // Main helpers //
   //////////////////
 
-/** Load a build.ssc file, parse, and return the configuration map.
-*
-* @param launchDirectory the directory to try load a file from
-*/
+  /** Load a build.ssc file, parse, and return the configuration map.
+    *
+    * @param launchDirectory the directory to try load a file from
+    */
   def localEntryConfig(launchDirectory: Path)
       : ConfigMap =
   {
-    // Need to load any buildfile
+    // Need to load any build.ssc file
     // Check for a build file
     val bfPath = launchDirectory.resolve("build.ssc")
     //println(s"bfPath $bfPath")
@@ -179,7 +179,7 @@ object Runner
     p.parse()
   }
 
-  /** returns a defaults config merged with user preferences
+  /** Returns a defaults config merged with user preferences
     *
     * Overwrites defaults with preferences expressed in the map of
     * user data.

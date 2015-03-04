@@ -4,8 +4,8 @@ import java.io.File
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.Path
 
-import sake.util.file._
-import sake.util.executable.FindExecutable
+import sake.helper.file._
+import sake.helper.executable.FindExecutable
 
 import java.util.regex.Pattern
 import ssc.action._
@@ -320,7 +320,7 @@ final class Action(
           val e = FindExecutable("dot").find(
             false,
             true,
-            sake.util.executable.Version.empty
+            sake.helper.executable.Version.empty
           )
 
           if(e != None) {
@@ -930,7 +930,7 @@ final class Action(
     val e = FindExecutable("grep").find(
       false,
       true,
-      sake.util.executable.Version.empty
+      sake.helper.executable.Version.empty
     )
 
 
@@ -1251,7 +1251,7 @@ final class Action(
     val e = FindExecutable("tree").find(
       false,
       true,
-      sake.util.executable.Version.empty
+      sake.helper.executable.Version.empty
     )
 
     if(e == None) {

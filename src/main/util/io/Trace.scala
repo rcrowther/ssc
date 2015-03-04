@@ -1,4 +1,4 @@
-package shared
+package sake.util.io
 
 
 
@@ -14,18 +14,19 @@ abstract class Trace
 {
 
 
+  /** Define if verbose prints are to go to the output.
+    */
+  def verbose: Boolean
+
+  /** Print output in colour
+    */
+  def noColor: Boolean
+
+
   private val newLine = System.lineSeparator()
 
   private val out = java.lang.System.out
   private val err = java.lang.System.err
-
-  /** Define if verbose prints are to go to the output.
-    */
-  protected def verbose: Boolean
-
-  /** Print output in colour
-    */
-  protected def noColor: Boolean
 
 
 
@@ -89,14 +90,12 @@ abstract class Trace
 
   /** Write warning output to standard error stream.
    *
-   * Only if verbose is on.
+   * Always prints.
    */
   def traceWarning(line: String)
   {
-    if (verbose) {
       if (noColor) err.println("** Warning ** " + line)
       else err.println(YELLOW + line + WHITE)
-    }
   }
 
 
@@ -113,7 +112,8 @@ abstract class Trace
 
   /** Write plain output to standard output stream
    * 
-   * In the stock terminal font/color settings.
+   * This method always prints, in the stock terminal font/color settings.
+   * Used for output of the results of actions.
    */
   def trace(line: String)
   {

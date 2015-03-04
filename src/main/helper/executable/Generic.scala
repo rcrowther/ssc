@@ -1,12 +1,14 @@
-package sake.util.executable
+package sake.helper.executable
 
 import java.nio.file.{Path, Files}
-import sake.util.file._
+import sake.helper.file._
 import sake.support.file.TraverseEntryPath
+
+
 
 /** A generic executable finder.
   */
-// Not ssorted for Windows at all.
+// Not sorted for Windows at all.
 class Generic(appName: String)
     extends FindExecutable
 {

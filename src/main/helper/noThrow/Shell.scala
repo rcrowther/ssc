@@ -1,4 +1,4 @@
-package sake.util.noThrow
+package sake.helper.noThrow
 
 import sake.DependantTaskerLike
 

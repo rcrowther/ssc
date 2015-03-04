@@ -5,12 +5,12 @@ import java.nio.file.Path
 import java.io.File
 import java.nio.charset.Charset
 
-//import sake.util.noThrow.Entry
-//import sake.util.Dir
-import sake.util.noThrow.Shell
+//import sake.helper.noThrow.Entry
+//import sake.helper.Dir
+import sake.helper.noThrow.Shell
 
 import sake.support.parser.CLParser
-import sake.util.file._
+import sake.helper.file._
 
 
 /** Find a SakeFile.txt, and run it.

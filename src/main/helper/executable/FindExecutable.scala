@@ -1,10 +1,14 @@
-package sake.util.executable
+package sake.helper.executable
 
 import java.nio.file.Path
-import sake.util.file._
+import sake.helper.file._
 import java.lang.System
 
-
+/** templates classes and objects seeking system-wide executables.
+*
+* Asks that descendant classes can, or try to, return the path of an executable (via an instance of [[sake.helper.executable.ExecuteData]]) and a [[sake.helper.executable.Version]],
+*  
+*/
 trait FindExecutable
     extends sake.util.noThrow.Shell
 {

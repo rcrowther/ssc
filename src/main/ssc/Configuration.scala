@@ -1,6 +1,6 @@
 package ssc
 
-import sake.support.parser.CLSwitchOption
+import sake.util.parser.ParameteredOption
 
 
 

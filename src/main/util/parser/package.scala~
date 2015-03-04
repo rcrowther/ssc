@@ -1,0 +1,36 @@
+package sake.util
+
+
+import scala.language.implicitConversions
+
+
+/** A simple commandline parser.
+  * 
+* The parser works from schemas, a map of strings (the task or switch to be identified), to an [[CLArgOption]] or a [[CLSwitchOption]]
+* 
+  */
+package object parser {
+
+  implicit def stringToParameterDescription(s: String)
+      : ParameterDescription =
+    new ParameterDescription(s)
+
+  /** Defines an arg configuration
+    *
+    * 
+    */
+  type ArgConfig = Map[String, CLArgOption]
+
+  /** Defines a switch configuration
+    *
+    * 
+    */
+  type SwitchConfig = Map[String, CLSwitchOption]
+
+  /** Defines a configuration underlying switches and args
+    *
+    * 
+    */
+  type OptionConfig = Map[String, CLOption]
+
+}//support

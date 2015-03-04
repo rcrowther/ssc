@@ -1,4 +1,4 @@
-package sake.util.executable
+package sake.helper.executable
 
 
 sealed abstract class Fail

@@ -1,21 +1,19 @@
 package ssc
 
-import sake.support.parser.CLSwitchOption
+import sake.util.parser.ParameteredOption
 
 
 class ParseCommandLine(
   val verbose: Boolean,
   val noColor: Boolean
 )
-    extends sake.Trace
-    with sake.support.parser.CLParser
+    extends sake.util.io.Trace
+    with sake.util.parser.Parser
 {
-
-
 
   private def processSwitches(
     task: String,
-    schema: Map[String, CLSwitchOption],
+    schema: Map[String, ParameteredOption],
     inputArgs: Array[String]
   )
       : Option[(String, ConfigGroup)] =
@@ -86,3 +84,5 @@ class ParseCommandLine(
   }
 
 }//ParseCommandLine
+
+

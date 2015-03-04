@@ -1,4 +1,4 @@
-package sake.util
+package sake.helper
 
 import java.nio.file.Path
 import java.io.File
@@ -21,7 +21,7 @@ import scala.language.implicitConversions
   * Importing the complete helper package i.e.
   *
   *{{{
-  * import sake.util.file._
+  * import sake.helper.file._
   *}}}
   *
   * imports the package object, which has useful implicits and

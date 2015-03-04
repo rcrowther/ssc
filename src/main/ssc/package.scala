@@ -18,4 +18,5 @@ package object ssc {
     */
   type ConfigGroup = Map[String, Seq[String]]
   val ConfigGroupEmpty = Map.empty[String, Seq[String]]
+
 }//ssc
