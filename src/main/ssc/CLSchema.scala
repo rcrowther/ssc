@@ -265,7 +265,7 @@ object CLSchema {
     "findfile" -> "search for source files in directories",
     "tree" -> "outputs a tree representation of source files",
     "compile" -> "run the scala compiler, scalac",
-    "fsc" -> "interactively run the fast scala compiler, fsc. Loads the compiler in memory (faster for recompiles). Try type 'help' at the prompt",
+    "fsc" -> "interactively run the fast scala compiler (loads in memory)",
     "test" -> "run tests (scalatest)",
     "run" -> "run a main class in compiled files",
     "vms" -> "outputs identification details on local (Java) Virtual Machines",

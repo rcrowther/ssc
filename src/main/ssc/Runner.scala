@@ -112,7 +112,7 @@ object Runner
       }
       else Configuration.default
 
-    val projectConfig : ConfigMap = userFileEnhancedConfig(defaultConfig,  loadConfig(cwd))
+    val projectConfig : ConfigMap = userFileEnhancedConfig(defaultConfig,  localEntryConfig(cwd))
 
 
     defaultConfig.foreach{ case(group, kvs) =>
@@ -148,7 +148,11 @@ object Runner
   // Main helpers //
   //////////////////
 
-  def loadConfig(launchDirectory: Path)
+/** Load a build.ssc file, parse, and return the configuration map.
+*
+* @param launchDirectory the directory to try load a file from
+*/
+  def localEntryConfig(launchDirectory: Path)
       : ConfigMap =
   {
     // Need to load any buildfile
@@ -164,7 +168,7 @@ object Runner
         ret
       }
       catch {
-        case e: Exception => traceVerbose(s"No configuraton file found (or readable) in: $launchDirectory\n (ssc will use default configuration)")
+        case e: Exception => traceInfo(s"No configuraton file found (or readable) in: $launchDirectory\n  (using default configuration)")
           Seq.empty[String]
       }
 
@@ -231,7 +235,7 @@ object Runner
   )
       : Project =
   {
-    val fileConfig : ConfigMap = loadConfig(cwd)
+    val fileConfig : ConfigMap = localEntryConfig(cwd)
     val projectConfig = userFileEnhancedConfig(defaultConfig, fileConfig)
     val dependancies : Seq[Project]  =
       if (
@@ -271,11 +275,11 @@ object Runner
     val taskConfig = project.projectConfig(task) ++ clConfigured
 
     //Hi-ho, off we go
-// Drop the switches from the map
+    // Drop the switches from the map
     val taskConfigSwitchless = taskConfig.map{case(k, v) => (k.drop(1) -> v)}
-//...then form a Config, in an Action
+    //...then form a Config, in an Action
     val runTask = new Action(task, cwd, Config(taskConfigSwitchless), isJDK)
-//...and run
+    //...and run
     runTask.run()
   }
 
@@ -285,84 +289,79 @@ object Runner
   /** Oh, you asked a question?
     */
   def main(inputArgs: Array[String]){
-    //val SAKE_HOME = "/home/rob/Code/sake/target/scala-2.11/ssc_2.11-0.1.0-SNAPSHOT.jar"
-    //val SCALA_HOME = "/home/rob/Deployed/scala-2.11.4/"
     //println(s"args:")
     //args.foreach(println)
 
-if(inputArgs.size == 0) {
-// Special case, no message, goto help
- printHelp("")
-}
-else {
-    // Filter show options
-    val mainHandledOption: Option[String] = inputArgs.find{ arg =>
-      Seq("-help", "-config", "-version").contains(arg)
-    }
-
-    if (mainHandledOption != None) {
-      mainHandledOption.get match{
-        case "-help" => {
-          val last = inputArgs.last
-          val task =
-            if (CLSchema.tasks.contains(last)) last
-            else ""
-          printHelp(taskName = task)
-        }
-        case "-config" => printRootProjectConfig(inputArgs)
-        case "-version" => printVersion()
-      }
-
+    if(inputArgs.size == 0) {
+      // Special case, no message, goto help
+      printHelp("")
     }
     else {
-
-      // Test for, and if necessary apply, these options,
-      // ...they apply to the runner too.
-      // They should be in every task config.
-      verbose = inputArgs.contains("-verbose")
-      noColor = inputArgs.contains("-noColor")
-
-      val defaultConfig =
-        if(inputArgs.contains("-mavenStrict")) {
-          Configuration.maven
-        }
-        else Configuration.default
-
-      // Build a configuration tree.
-      val projectTree = buildProjectTree(
-        defaultConfig,
-        cwd
-      )
-
-      //println("project tree:\n" +projectTree.toStringTree())
-
-
-
-      // Right, we got a config.
-      // TODO: here, we want all the file-enhanced configs, all the way down.
-      // val defaultConfigc = defaultConfig("compile")
-      //println(s"defaultConfig(compile):\n $defaultConfigc")
-      // Parse the input args.
-      // The result is validated against the commandline options structures.
-      //TODO: This would only be done once, at top, but maybe passed through.
-      val clParser = new ParseCommandLine(verbose, noColor)
-      val argsO: Option[(String, ConfigGroup)] = clParser.parse(inputArgs)
-      //println(s"argsO:\n $argsO")
-
-      // Conmmand line format fails always end in failure.
-      //TODO: do per installation. However, its the same arg result over every base
-      // default
-
-      if (argsO != None) {
-        val (task, clConfigured) = argsO.get
-
-        runProject(
-          projectTree,
-          task,
-          clConfigured
-        )
+      // Filter simple show options
+      val mainHandledOption: Option[String] = inputArgs.find{ arg =>
+        Seq("-help", "-config", "-version").contains(arg)
       }
-}
+
+      if (mainHandledOption != None) {
+        mainHandledOption.get match{
+          case "-help" => {
+            val last = inputArgs.last
+            val task =
+              if (CLSchema.tasks.contains(last)) last
+              else ""
+            printHelp(taskName = task)
+          }
+          case "-config" => printRootProjectConfig(inputArgs)
+          case "-version" => printVersion()
+        }
+
+      }
+      else {
+
+        // Test for, and if necessary apply, these options,
+        // ...they apply to the runner/parsing too.
+        // They should be in every task config.
+        verbose = inputArgs.contains("-verbose")
+        noColor = inputArgs.contains("-noColor")
+
+        // Get the default config
+        val defaultConfig =
+          if(inputArgs.contains("-mavenStrict")) {
+            Configuration.maven
+          }
+          else Configuration.default
+
+        // Build a configuration tree.
+        // (also checks for overriding build.ssc files)
+        val projectTree = buildProjectTree(
+          defaultConfig,
+          cwd
+        )
+
+        //println("project tree:\n" +projectTree.toStringTree())
+
+
+
+        // Parse the input args.
+        val clParser = new ParseCommandLine(verbose, noColor)
+
+        // NB: The return is tuple(task, targeted configuration)
+        val argsO: Option[(String, ConfigGroup)] = clParser.parse(inputArgs)
+        //println(s"argsO:\n $argsO")
+
+
+
+        // Conmmand line format fails always end in failure.
+        if (argsO != None) {
+          val (task, clConfigured) = argsO.get
+
+          runProject(
+            projectTree,
+            task,
+            clConfigured
+          )
+        }
+      }
     }
   }
 

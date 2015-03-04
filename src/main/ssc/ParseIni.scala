@@ -28,14 +28,15 @@ class ParseIni(
     * Note: very irregular, this adds the switch symbol back to
     * recognised switches.
     */
-  def clean()
+  def parse()
       : ConfigMap =
   {
     val b = Map.newBuilder[String, Map[String, Seq[String]]]
     val gb = Map.newBuilder[String, Seq[String]]
     var currentGroup: String = ""
-    var first = true
-    data.foreach{line =>
+    var groupFound = false
+
+    data.foreach{ line =>
       val trimmed = line.trim
 
       // Only try if not empty and not a comment
@@ -43,7 +44,7 @@ class ParseIni(
       if (!trimmed.isEmpty && !(trimmed.charAt(0) == '#')) {
         if (trimmed.charAt(0) == '[') {
           // is a group
-          if (first) first = false
+          if (!groupFound) groupFound = true
           else {
             b += (currentGroup -> gb.result())
             gb.clear()
@@ -62,15 +63,12 @@ class ParseIni(
       }
     }
 
+// As the last group data is added,
+// check a group title was found at all
+if(groupFound) {
     b += (currentGroup -> gb.result())
+}
     b.result
-  }
-
-
-  def parse() //(verifyKeys: Seq[String])
-      : ConfigMap =
-  {
-    clean()
   }
 
 }//ParseIni

@@ -1,20 +1,26 @@
 == TODO
 And debug compiles?
 
+Get the new trace in there, see if it works.
+
 Colours still not rising from the trait.
 
 Colours please in -config.
 
-Please do 'nothing' gracefully.
+Further parameter parsing?
+
+Trigger as much as we can from imported code,
+get the rest on java/scala.home
+
+Flush for the meters.
+
+vms is proving there are still commandline setup possibilities to reconfigure.
+
+Fix the script. Again. Now for unecessary imports from Java.
 
 probably drop compile switches from introspect and bytecode, when we are sure they don't compile...
 
 Why does fsc think it's verbose?
-
-defend ssc on nothing:
-ssc.ParseCommandLine.parse(ParseCommandLine.scala:45)
-	at ssc.Runner$.main(Runner.scala:340)
-	at ssc.Runner.main(Runner.scala)
 
 
 Scalatest gets lost in this circumstance?
@@ -44,6 +50,8 @@ Fail behaviour of tasks:
 [] test
 [] doc
 [] jar
+
+Findfile is finding hidden files?
 
 Dim the text, somehow
 
