@@ -21,13 +21,71 @@ object Runner
 
   val cwd : Path = Paths.get(".").toAbsolutePath().normalize()
 
+  // This is only usable if isJDK is also true
+  val javaDistPath: Path = {
+    val v = java.lang.System.getProperty("ssc.java.home")
+    //println(s"javaDistPath $v")
+    if (v == null) {
+      throw new Exception("The system property 'ssc.java.home' is not available.")
+    }
+    else v.toPath
+  }
 
   val isJDK: Boolean = {
-    val ccdStr = java.lang.System.getProperty("ssc.isjdk")
-    if (ccdStr == null) {
-      throw new Exception("The system property 'ssc.isjdk' is not available.")
+    val v = java.lang.System.getProperty("ssc.java.isjdk")
+    //println(s"isJDK $v")
+    if (v == null) {
+      throw new Exception("The system property 'ssc.java.isjdk' is not available.")
     }
-    else (ccdStr == "true")
+    else (v == "true")
+  }
+
+  val isInstalled: Boolean = {
+    val v = java.lang.System.getProperty("ssc.java.installed")
+    //println(s"isInstalled $v")
+    if (v == null) {
+      throw new Exception("The system property 'ssc.java.installed' is not available.")
+    }
+    else (v == "true")
+  }
+
+  private val javaPaths = {
+    val b = Map.newBuilder[String, Path]
+    if(isInstalled || isJDK) {
+      val root =
+        if (isInstalled) "/usr".toPath
+        else javaDistPath
+      b += ("java" -> root.resolve("bin/java"))
+      b += ("jar" -> root.resolve("bin/jar"))
+      b += ("javap" -> root.resolve("bin/javap"))
+      b += ("jps" -> root.resolve("bin/jps"))
+    }
+    //println(s"jpaths: ${b.result}")
+    b.result()
+  }
+
+
+
+  val scalaDistPath: Path = {
+    val v = java.lang.System.getProperty("ssc.scala.home")
+    //println(s"sscJavaDir $v")
+    if (v == null) {
+      throw new Exception("The system property 'ssc.scala.home' is not available.")
+    }
+    else v.toPath
+  }
+
+  private val scalaPaths = {
+    val b = Map.newBuilder[String, Path]
+    val root = scalaDistPath
+    b += ("scala" -> root.resolve("bin/scala"))
+    b += ("scalap" -> root.resolve("bin/scalap"))
+    b += ("fsc" -> root.resolve("bin/fsc"))
+    b += ("scalac" -> root.resolve("bin/scalac"))
+    b += ("scaladoc" -> root.resolve("bin/scaladoc"))
+
+    //println(s"spaths: ${b.result}")
+    b.result()
   }
 
 
@@ -278,7 +336,14 @@ object Runner
     // Drop the switches from the map
     val taskConfigSwitchless = taskConfig.map{case(k, v) => (k.drop(1) -> v)}
     //...then form a Config, in an Action
-    val runTask = new Action(task, cwd, Config(taskConfigSwitchless), isJDK)
+    val runTask = new Action(
+      task,
+      cwd,
+      Config(taskConfigSwitchless),
+      isJDK,
+      javaPaths,
+      scalaPaths
+    )
     //...and run
     runTask.run()
   }

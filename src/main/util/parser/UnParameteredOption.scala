@@ -21,7 +21,7 @@ import scala.language.implicitConversions
 class UnParameteredOption (
   val description: String
 )
-extends Option
+extends CLOption
 {
   // make nothing, to print nothing.
   val parameterDescription = ParameterDescription.empty

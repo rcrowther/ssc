@@ -21,8 +21,8 @@
 
 
 ## Java
-# The script first tries the options below. If an executable is not
-# found, the script assumes that "java" is installed on the system.
+# The script tries the options below.
+# If they are not found, it checks if "java" is installed on the system.
 
 ## Enable to point at a different JDK/JRE Java installation.
 # (to be found in the subfolder /bin/java)
@@ -44,9 +44,8 @@ JAVA_HOME=""
 # (to be found in the subfolder /lib)
 SCALA_HOME=""
 
-# If your Scala library is not in the usual /lib/ position override
-# here. This should be the address of a folder containing Scala jars.
-##SCALALIB=""
+# SSC can not function if SCALALIB is modified. It *must* point at a
+# distribution with /lib jars.
 
 
 ## SSC
@@ -252,41 +251,54 @@ fi
 ##
 
 # Decide the Java executable.
-# if JAVACMD.isEmpty and !JAVA_HOME.isEmpty and JAVA_HOME.exists and
-# .isExecutable
+# These so we know we can hunt for bin/jar etc.
+is_JDK="false"
+is_installed="false"
+
+# if JAVACMD.isEmpty and !JAVA_HOME.isEmpty and JAVA_HOME.exists and .isExecutable
 if [[ -z "$JAVACMD" && -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
     JAVACMD="$JAVA_HOME/bin/java"
+    # Look for lib/tools.jar, it's a good candidate to tell us we have a JDK
+    if [[ -r "$JAVA_HOME/lib/tools.jar" ]]; then
+	is_JDK="true"
+    fi
 fi
 
+# try for installed versions, then
+# we can use jar, javap, java, jps
+if [[ -z "$JAVACMD" && -x "/usr/bin/java" ]]; then
 
-# If we have a JDK, gather a couple of jars for the classpath
-# For other tools, we'll have to commandline execute from java.home
-# (visualvm, I don't yet know).
-# Look for lib/tools.jar, it's a good candidate to tell us we have a
-# JDK
-is_jdk="false"
-if [[ -n "$JAVA_HOME" && -r "$JAVA_HOME/lib/tools.jar" ]]; then
-    # Alright, we're picking and choosing the JDK material.
-    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/tools.jar $SEP)"
-    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/jconsole.jar $SEP)"
-    TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $JAVA_HOME/lib/missioncontrol/mc.jar $SEP)"
-    is_jdk="true"
+    JAVACMD="/usr/bin/java"
+
+    if [[ -x "/usr/bin/jar" && -x "/usr/bin/javap" && -x "/usr/bin/jps"  ]]; then
+	is_JDK="true"
+	is_installed="true"
+
+else
+    echo "This script must have the variable JAVA_HOME pointed at a Java distribution folder. The script tried to look for an installation, but failed."
+    onExit
 fi
+    fi
 
 
+# Decide the Scala executable.
+# These so we know we can hunt for bin/scalap etc.
+# We usually get all the tools with Scala, though?
 
 # Put the scala home on the toolpath
-# if SCALALIB.isEmpty and !SCALA_HOME.isEmpty and
-# SCALA_HOME/lib.exists and .isReadable
-if [[ -z "$SCALALIB" && -n "$SCALA_HOME" && -r "$SCALA_HOME/lib" ]]; then
+# if !SCALA_HOME.isEmpty and SCALA_HOME/lib.exists
+# and .isReadable
+if [[ -n "$SCALA_HOME" && -r "$SCALA_HOME/lib" ]]; then
     SCALALIB="$SCALA_HOME/lib"
 else
-    echo "This script must have the variable SCALA_HOME pointed at a Scala distribution folder (with executable .jars in /lib)"
+    echo "This script must have the variable SCALA_HOME pointed at a Scala distribution folder (with executable .jars in /lib). An installed Scala provides no library jars."
     onExit
 fi
 
 # Ok, we have a valid Scala /lib
 # Gather jars for the classpath
+# Actually, we only need reflect and compler and library,
+# as I recall, to kickstart ssc.Runner, but whatever.
 scala_lib_contents="$(gatherJars $SCALALIB $SEP)"
 if [[ -n "$scala_lib_contents" ]]; then
     TOOL_CLASSPATH="$(stringSepAppend $TOOL_CLASSPATH $scala_lib_contents $SEP)"
@@ -408,7 +420,10 @@ execCommand \
     $JAVA_OPTS \
     "${java_args[@]}" \
     $(classpathArgs) \
-    -Dssc.isjdk="$is_jdk" \
+    -Dssc.java.home="$JAVA_HOME" \
+    -Dssc.java.isjdk="$is_JDK" \
+    -Dssc.java.installed="$is_installed" \
+    -Dssc.scala.home="$SCALA_HOME" \
     $OVERRIDE_USEJAVACP \
     "$EMACS_OPT" \
     $WINDOWS_OPT \

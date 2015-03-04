@@ -1,9 +1,11 @@
 == TODO
 And debug compiles?
 
+Lot more with the parser. It could take task parameters!
+
 Colours still not rising from the trait.
 
-Colours please in -config.
+Colours please in -config?
 
 Further parameter parsing?
 
@@ -81,6 +83,8 @@ when running, hunt for packages?
 protect against pre/post slashes in user-configured paths?
 
 sake should have a nice message if there is no temp dir?
+
+
 
 == Done
 *"Done" is abandoned as have a basic compile/install loop* Gone GitHub.

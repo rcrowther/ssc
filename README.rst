@@ -4,11 +4,37 @@ SSC
 
 The Scala documenter
 ====================
-``ssc`` is a Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
+``ssc`` is a Unix/Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
 
-``ssc`` is for documenting Scala code. Which means it leverages ``scaladoc``. ``scaladoc`` is amazing. I tired of trying to leverage it's abilities, hence, ``ssc``.
+
+``ssc`` is good for documenting. It can also help delve round in other people's code, fix your own code (especially if broken), and understand how Scala projects are organised. 
+
 
 ``ssc`` runs from the commandline. On that,
+
+
+List of tasks
+-------------
+
+===========  ====================  =====================
+ Task         implemented by        ssc tampering
+===========  ====================  =====================
+find          invoke 'grep'         formatting
+findfile      Java code             formatting
+tree          invoke 'tree'         formatting
+introspect    invoke 'scalap'         -
+bytecode      invoke 'javap'          -
+repl          invoke 'scala'        (no targetting)
+run           invoke 'scala'        targets classnames
+doc           invoke 'scaladoc'     targets source folders
+vms           invoke 'jps'          formatting
+test          invoke 'scalatest'      -
+jar           invoke 'jar'          targets source folders
+===========  ====================  =====================
+
+You can tell I'm not cut out for Java - I just told you what it does and how.
+
+``ssc`` has been a marsh of coding grief (a corrupt-Java self-activating tool with online documentation and no community?). On that,
 
 
 The bad and the good
@@ -26,13 +52,12 @@ The bad and the good
   - offers most of scaladoc's commandline options from it's own commandline (-footer, -noPrefixes etc.)
   - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
+  - uses the Scala and Java libraries you point it at, not the ones it wants to help you with. 
   - It can use tree. tree! :)
 
 **NEW** The shoddiest fsc implementation known to code!
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
-
-I wanted it, otherwise I wouldn't have coded it, but other people may not be interested. Still, it can be cool. Let's say you'd like to understand an extensive Scala codebase. Dive into the corner you are interested in, then run ``ssc doc``. Chances are, ``ssc`` will work out the code layout. The compile will fail, because you didn't document everything, but so what? Now you can have a clutch of scaladoc laying out inheritance, implicits (if you need), passed values, and more.
 
 
 Alternatives
@@ -71,13 +96,11 @@ You need Java and Scala.
 
 Download ``ssc``, and navigate a terminal into the top folder. Then, ::
 
-    mkdir build/main
-    mkdir build/main/scala
-    scalac -verbose @scalacArgs
+    ./compile
 
 That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named `/build`.
 
-Then make executable .jar files from the code, ::
+Then make an executable package, ::
 
     scala -verbose -toolcp build/main/scala -Dsake.runner.home= sake.PackageSake installable
 
@@ -107,17 +130,17 @@ or restart the whole computer but, in the middle of development, that's a pain.
 
 Adjust the script
 -----------------
-If Scala and Java are fully installed, ``ssc`` may work now. However, most Java users have a muddle of JDK/JVM/Scala installations. If development is on `Eclipse`, you have caos.
+The ``ssc`` script needs pointing at a Scala distribution folder, at least. Maybe a Java one too.
 
-The launching script has been written to make this easy. As easy as I can make it. Goto `bin/ssc`. At the top are a few annotated variables, notably,
+The launching script has been written to make this as easy as I can make it. Goto `bin/ssc`. At the top are a few annotated variables, notably,
 
 JAVA_HOME=""
 
 SCALA_HOME=""
 
-In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. But if you have an up-to-date Java, or a Java inside an IDE, point JAVA_HOME at the `/bin` folder.
+In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. If you have an up-to-date Java, or a Java inside an IDE, point JAVA_HOME at the `/bin` folder.
 
-The same is true of Scala, and SCALA_HOME. Point it at some Scala distribution folder somewhere.
+SCALA_HOME must be pointed at a Scala distribution folder. ``ssc`` will not work with installed Scala.
 
 
 Libraries

@@ -11,6 +11,7 @@ import java.util.regex.Pattern
 import ssc.action._
 
 
+
 /** Carries actions ssc can make.
   *
   * This class contains every external action `ssc` can make. It is
@@ -39,7 +40,9 @@ final class Action(
   val taskName: String,
   val cwd: Path,
   val config: Config,
-  val isJDK: Boolean
+  val isJDK: Boolean,
+  val javaPaths: Map[String, Path],
+  val scalaPaths: Map[String, Path]
 )
     extends sake.util.io.Trace
     with sake.util.noThrow.Shell
@@ -589,8 +592,8 @@ final class Action(
     }
 
     val command =
-      if (fscOpts != None) "fsc"
-      else "scalac"
+      if (fscOpts != None) scalaPaths("fsc").toString
+      else scalaPaths("scalac").toString
 
     // Build some compile options
     val b = buildScalaStandardOptions(
@@ -662,86 +665,108 @@ final class Action(
   def doJar()
       : Boolean =
   {
-    // Create a manifest file
-    val b = Seq.newBuilder[String]
 
-    b += "Manifest-Version: 1.0"
-    b += "Implementation-Version: " + config("appVersion")
-    b += "Specification-Title: " + config("appName")
-    b += "Specification-Version: " + config("appVersion")
+    if(!assertJDK("jps")) false
+    else {
 
-    if (!config("classpaths").isEmpty) {
-      b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
-    }
+      // Create a manifest file
+      val b = Seq.newBuilder[String]
 
-    if (!config("mainClass").isEmpty) {
-      b += "Main-Class: " + config("mainClass")
-    }
+      b += "Manifest-Version: 1.0"
+      b += "Implementation-Version: " + config("appVersion")
+      b += "Specification-Title: " + config("appName")
+      b += "Specification-Version: " + config("appVersion")
 
-
-    Entry.write(
-      cwd.resolve("MANIFEST.MF"),
-      b.result()
-    )
-
-
-    // TODO: permissions?
-
-
-    // Now make a jar file
-    // NB: the 'jar' tool silenty replaces existing
-    // jars, which is what we would like.
-    b.clear
-    b += "jar"
-
-    var switches = "cfm"
-    if (config.asBoolean("verboseTools")) {
-      switches = switches + "v"
-    }
-    if (config.asBoolean("uncompressed")) {
-      switches = switches + "0"
-    }
-    b += switches
-
-    // TODO: Scala version in title?
-    val jarFileName =
-      if (config.asBoolean("noVersionTitle")) {
-        config("appName") + ".jar"
+      if (!config("classpaths").isEmpty) {
+        b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
       }
-      else config("appName") + "_" + config("appVersion") + ".jar"
 
-    b += jarFileName
-
-    b += "MANIFEST.MF"
-
+      if (!config("mainClass").isEmpty) {
+        b += "Main-Class: " + config("mainClass")
+      }
 
 
-    // NB: 'relative path'  probe down to include Scala and Java files.
-    compiledClasspaths.foreach { p =>
-      // Also, the all-important '.'
-      b += "-C"
-      b += p.toString
-      b += "."
+      Entry.write(
+        cwd.resolve("MANIFEST.MF"),
+        b.result()
+      )
+
+
+      // TODO: permissions?
+
+
+      // Now make a jar file
+      // NB: the 'jar' tool silenty replaces existing
+      // jars, which is what we would like.
+      b.clear
+
+      val jarCmd = javaPaths("jar").toString
+
+      b += jarCmd
+
+
+      var switches = "cfm"
+      if (config.asBoolean("verboseTools")) {
+        switches = switches + "v"
+      }
+      if (config.asBoolean("uncompressed")) {
+        switches = switches + "0"
+      }
+      b += switches
+
+      // TODO: Scala version in title?
+      val jarFileName =
+        if (config.asBoolean("noVersionTitle")) {
+          config("appName") + ".jar"
+        }
+        else config("appName") + "_" + config("appVersion") + ".jar"
+
+      b += jarFileName
+
+      b += "MANIFEST.MF"
+
+
+
+      // NB: 'relative path'  probe down to include Scala and Java files.
+      compiledClasspaths.foreach { p =>
+        // Also, the all-important '.'
+        b += "-C"
+        b += p.toString
+        b += "."
+      }
+
+      //println(s"jar line ${b.result()}")
+
+      traceInfo("building jar...")
+      val (retCode, stdErr, stdOut) = shCatch (b.result())
+
+      // Cleanup
+      Entry.delete(cwd.resolve("MANIFEST.MF"))
+
+      if (retCode != 0) {
+        traceWarning("jar creation errors")
+        false
+      }
+      else true
     }
-
-    traceInfo("building jar...")
-    val (retCode, stdErr, stdOut) = shCatch (b.result())
-
-    // Cleanup
-    Entry.delete(cwd.resolve("MANIFEST.MF"))
-
-    if (retCode != 0) {
-      traceWarning("jar creation errors")
-      false
-    }
-    else true
   }
-
 
 
   /////////////
   // Control //
   /////////////
+
+  def assertJDK(
+    requester: String
+  )
+      : Boolean =
+  {
+    if(!isJDK) {
+      traceWarning("This command is not available")
+      traceAdvice(s"  (the runner could not find, in a JDK, a launcher for '$requester')")
+    }
+    isJDK
+  }
 
   /** Tests if sourcepaths exist on this compile route.
     */
@@ -753,7 +778,7 @@ final class Action(
   {
     if (processingRoute.srcPath == None) {
       val configPaths = processingRoute.srcConfig.mkString(", ")
-      traceInfo(s"$requester is requesting an operation from source files, but no directories can be found in the configured list: $configPaths")
+      traceWarning(s"$requester is requesting an operation from source files, but no directories can be found in the configured list: $configPaths")
       false
     }
     else true
@@ -849,8 +874,9 @@ final class Action(
       Dir.create(docPath)
 
       //TODO: I have no idea if scaladoc can use compiled files?
+      val scaladocCmd = scalaPaths("scaladoc").toString
       val b = buildScalaStandardOptions(
-        "scaladoc",
+        scaladocCmd,
         Some(docPath),
         false
       )
@@ -1318,13 +1344,15 @@ final class Action(
   // TODO: Such a hulk it could be traited?
   def fscCompile() {
 
+    val fscCmd = scalaPaths("fsc").toString
+
     val resetCommand =
-      if (config.asBoolean("verboseTools")) Seq("fsc", "-reset")
-      else Seq("fsc", "-verbose", "-reset")
+      if (config.asBoolean("verboseTools")) Seq(fscCmd, "-reset")
+      else Seq(fscCmd, "-verbose", "-reset")
 
     val stopCommand =
-      if (config.asBoolean("verboseTools")) Seq("fsc", "-shutdown")
-      else Seq("fsc", "-verbose", "-shutdown")
+      if (config.asBoolean("verboseTools")) Seq(fscCmd, "-shutdown")
+      else Seq(fscCmd, "-verbose", "-shutdown")
 
     //
     // Actions
@@ -1491,7 +1519,9 @@ final class Action(
       else {
 
         val b = Seq.newBuilder[String]
-        b += "scalap"
+
+        val scalapCmd = scalaPaths("scalap").toString
+        b += scalapCmd
 
         if (config.asBoolean("private")) {
           b += "-private"
@@ -1527,67 +1557,74 @@ final class Action(
   //TODO: Could work for java too, unlike 'introspect'
   def bytecode()
   {
-    // Get the basic scala routes
-    val r = scalaRoute
+    if(assertJDK("javap")) {
 
-    // ensure compiled classes exist
-    if (compileIfNotPopulated("'bytecode' request", r)) {
+      // Get the basic scala routes
+      val r = scalaRoute
 
-      val cps = config.asSeq("classes")
+      // ensure compiled classes exist
+      if (compileIfNotPopulated("'bytecode' request", r)) {
 
-      if (cps.isEmpty) {
-        traceError("Please add classnames to a 'bytecode' task. Use switch -classes <list of class names>")
+        val cps = config.asSeq("classes")
 
-      }
-      else {
+        if (cps.isEmpty) {
+          traceError("Please add classnames to a 'bytecode' task. Use switch -classes <list of class names>")
 
-        val b = Seq.newBuilder[String]
-        b += "javap"
-
-        if (config.asBoolean("methodfields")) {
-          b += "-l"
         }
-        if (config.asBoolean("public")) {
-          b += "-public"
-        }
-        if (config.asBoolean("protected")) {
-          b += "-protected"
-        }
-        if (config.asBoolean("private")) {
-          b += "-private"
-        }
-        if (config.asBoolean("systemInfo")) {
-          b += "-sysinfo"
-        }
-        if (config.asBoolean("classInfo")) {
-          b += "-verbose"
-        }
+        else {
 
-        // All-important -c option
-        // If not, this is a rubbish version of scalap
-        b += "-c"
+          val b = Seq.newBuilder[String]
 
-        // libs
-        if (libPath != None) {
-          b += "-extdirs"
-          b += libPath.toString
+
+          val javapCmd = javaPaths("javap").toString
+
+          b += javapCmd
+
+          if (config.asBoolean("methodfields")) {
+            b += "-l"
+          }
+          if (config.asBoolean("public")) {
+            b += "-public"
+          }
+          if (config.asBoolean("protected")) {
+            b += "-protected"
+          }
+          if (config.asBoolean("private")) {
+            b += "-private"
+          }
+          if (config.asBoolean("systemInfo")) {
+            b += "-sysinfo"
+          }
+          if (config.asBoolean("classInfo")) {
+            b += "-verbose"
+          }
+
+          // All-important -c option
+          // If not, this is a rubbish version of scalap
+          b += "-c"
+
+          // libs
+          if (libPath != None) {
+            b += "-extdirs"
+            b += libPath.toString
+          }
+
+          // NB: classpath probe down for Scala and Java files.
+          compiledClasspaths.foreach { p =>
+            b += "-classpath"
+            b += p.toString
+          }
+
+          // Classes to be disassembled
+          cps.foreach{ cp =>
+            b  += cp
+          }
+
+          //println(s"cps $cps")
+          //println(b.result())
+          traceInfo("javap out:")
+          shPrint(b.result())
         }
-
-        // NB: classpath probe down for Scala and Java files.
-        compiledClasspaths.foreach { p =>
-          b += "-classpath"
-          b += p.toString
-        }
-
-        // Classes to be disassembled
-        cps.foreach{ cp =>
-          b  += cp
-        }
-
-        //println(s"cps $cps")
-        //println(b.result())
-        traceInfo("javap out:")
-        shPrint(b.result())
       }
     }
   }
@@ -1667,11 +1704,13 @@ final class Action(
       }
       else {
 
+        val scalaCmd = scalaPaths("scala").toString
         val b = buildScalaStandardOptions(
-          "scala",
+          scalaCmd,
           None,
           true
         )
+
         b += "-howtorun:object"
         b += "-nc"
         b += c
@@ -1693,15 +1732,14 @@ final class Action(
 
   def vms()
   {
-    if(!isJDK) {
-      traceWarning("This command is not available")
-      traceAdvice("  (the runner could not find the launcher 'jps' in a JDK)")
-    }
-    else {
+    if(assertJDK("jps")) {
+
+
+      val jpsCmd = javaPaths("jps").toString
 
       // Get the data
       val (retCode, stdErr, stdOut) = shCatch (
-        Seq("jps")
+        Seq(jpsCmd)
       )
 
 
@@ -1780,8 +1818,12 @@ final class Action(
         else {
           traceInfo("scalaTest executable found!")
 
+
           val b = Seq.newBuilder[String]
-          b += "scala"
+
+          val scalaCmd = scalaPaths("scala").toString
+          b += scalaCmd
+
           b += "-classpath"
           b += exec
 
@@ -1862,13 +1904,15 @@ final class Action(
     */
   def jar()
   {
-    // Get the basic scala routes
-    val r = scalaRoute
+    if(assertJDK("jar")) {
+      // Get the basic scala routes
+      val r = scalaRoute
 
-    // ensure compiled classes exist
-    if(assertCompile("'jar' request", r, None)) {
-      // Ok
-      doJar()
+      // ensure compiled classes exist
+      if(assertCompile("'jar' request", r, None)) {
+        // Ok
+        doJar()
+      }
     }
   }
 
