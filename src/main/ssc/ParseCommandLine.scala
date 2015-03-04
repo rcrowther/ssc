@@ -37,7 +37,7 @@ class ParseCommandLine(
   {
 
     val idx = inputArgs.indexWhere{ arg =>
-      (arg(0) != '-')
+      (arg(0) != '-' && Configuration.tasks.contains(arg))
     }
 
     if (idx == -1) {
@@ -46,13 +46,7 @@ class ParseCommandLine(
     }
     else {
       val task = inputArgs(idx)
-      if(!Configuration.tasks.contains(task)) {
-        traceWarning(s"task not recognised '$task'")
-        None
-      }
-      else {
-        Some((inputArgs.slice(0, idx), task, inputArgs.slice(idx + 1, inputArgs.size)))
-      }
+      Some((inputArgs.slice(0, idx), task, inputArgs.slice(idx + 1, inputArgs.size)))
     }
   }
 

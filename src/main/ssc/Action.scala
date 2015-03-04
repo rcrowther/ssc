@@ -41,13 +41,14 @@ final class Action(
   val config: Config,
   val isJDK: Boolean
 )
-    extends sake.Trace
+    extends sake.util.io.Trace
     with sake.util.noThrow.Shell
     with Runnable
 {
+
   // construct Trace abstracts from the incoming config
-  protected val noColor: Boolean = config.asBoolean("noColor")
-  protected val verbose: Boolean = config.asBoolean("verbose")
+  val noColor: Boolean = config.asBoolean("noColor")
+  val verbose: Boolean = config.asBoolean("verbose")
 
 
 
