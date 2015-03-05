@@ -57,7 +57,7 @@ object CLSchema {
   private val treeSwitches: ParameteredConfig = Map(
     "-subpath" -> ("define a subpath of source to build the tree from", Seq(""), ParameterDescription.path),
     "-dir" -> "output directories only",
-    "-get" -> ("partial text match against live text (filename base or a line). Case-sensitive", Seq(""), ParameterDescription.text),
+    "-text" -> ("partial text match against live text (filename base or a line). Case-sensitive", Seq(""), ParameterDescription.text),
     "-hidden" -> "include hidden files ('tree' can not find hidden Unix files - preceeded with a dot - with or without this switch)"
   )
 
@@ -176,8 +176,8 @@ object CLSchema {
   private val scalaTestSwitches: ParameteredConfig = Map(
     "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", Seq(""), ParameterDescription.path),
     "-to" -> ("where output goes. One of 'gui', 'out', 'err' (default: out)", Seq(""), ParameterDescription.strCode),
-    "-suite" -> ("specify a suite to run", Seq(""), ParameterDescription.text),
-    "-suiteText" -> ("a fragment of path used to find a set of suites", Seq(""), ParameterDescription.text),
+    "-suiteTextE" -> ("exact text match (package and classname) for a suite to run", Seq(""), ParameterDescription.text),
+    "-suiteText" -> ("partial text match against a set of suites (the class package path) to run", Seq(""), ParameterDescription.text),
     "-match" -> (" specify a test to run (full path)", Seq(""), ParameterDescription.className),
     "-text" -> ("a fragment of name used to find a set of tests", Seq(""), ParameterDescription.text, false, 1)
 

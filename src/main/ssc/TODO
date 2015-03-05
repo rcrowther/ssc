@@ -1,7 +1,8 @@
 == TODO
-And debug compiles?
+Not handling spaces in build file groups.
 
-Lot more with the parser. It could take task parameters!
+
+Lot more with the parser. It could take task parameters.
 
 Colours still not rising from the trait.
 
@@ -9,14 +10,10 @@ Colours please in -config?
 
 Further parameter parsing?
 
-Trigger as much as we can from imported code,
-get the rest on java/scala.home
 
 Flush for the meters.
 
 vms is proving there are still commandline setup possibilities to reconfigure.
-
-Fix the script. Again. Now for unecessary imports from Java.
 
 probably drop compile switches from introspect and bytecode, when we are sure they don't compile...
 
@@ -62,8 +59,6 @@ bubble. Because I'm bored.
 Guess package names for 'run'.
 
 srcClean would be nice
-
-Stop warning if there's no config file at all.
 
 Fix tests!
 

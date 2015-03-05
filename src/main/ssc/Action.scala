@@ -1031,7 +1031,7 @@ final class Action(
           // Until someone digs in source, assuming '1' is 'nothing found'
           retCode match {
             case 1 => {
-              traceWarning("  ** no results **")
+              traceWarning("** no results **")
             }
             case _ => {
               traceWarning("run errors")
@@ -1138,7 +1138,7 @@ final class Action(
 
 
           if (subpathed.isEmpty) {
-            traceWarning("  ** no results **")
+            traceWarning("** no results **")
           }
           else trace(lb.result())
         }
@@ -1271,7 +1271,7 @@ final class Action(
 
 
       if (subpathed.isEmpty) {
-        traceWarning("  ** no results **")
+        traceWarning("** no results **")
       }
       else trace(lb.result())
       
@@ -1788,7 +1788,7 @@ final class Action(
 
 
         if (splitLines.isEmpty) {
-          traceWarning("  ** no results **")
+          traceWarning("** no results **")
         }
         else trace(b.result())
       }
@@ -1874,9 +1874,9 @@ final class Action(
           b += reporter
 
           // ...and finally the  target options.
-          if (!config("suiteMatch").isEmpty) {
+          if (!config("suiteTextE").isEmpty) {
             b+= "-s"
-            b += config("suiteMatch")
+            b += config("suiteTextE")
           }
           if (!config("suiteText").isEmpty) {
             b += "-w"
