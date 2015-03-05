@@ -1,0 +1,34 @@
+## Empty framework for a build.ssc file
+#
+#
+[find]
+verbose = true
+[test]
+verbose = true
+[introspect]
+verbose = true
+[findfile]
+verbose = true
+[fsc]
+verbose = true
+[clear]
+verbose = true
+[run]
+verbose = true
+[clean]
+verbose = true  
+[repl]
+verbose = true
+[compile]
+verbose = true
+[doc]
+verbose = true
+[vms]
+verbose = true
+[tree]
+verbose = true
+[bytecode]
+verbose = true
+[jar]
+verbose = true
+
