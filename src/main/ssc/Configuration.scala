@@ -35,7 +35,7 @@ object Configuration {
     default.map{ case(gk, gv) =>
       val newGV =
         gv.map{ case(k, v) =>
-          println(s"overrides.contains(k) ${overrides.contains(k)}")
+          //println(s"overrides.contains($k) ${overrides.contains(k)}")
           val  newV =
             if (overrides.contains(k)) overrides(k)
             else v

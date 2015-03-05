@@ -6,8 +6,7 @@ import sake.util.io.Trace
 
 /** Simple commandline parser.
   *
-  * Must be mixed into a class also mixing [[sake.Trace]]. The class
-  * does not need to be a [[sake.Sake]].
+  * Must be mixed into a class also mixing [[sake.util.io.Trace]].
   *
   * To verify the commandline, and restructure in a more convenient
   * format, the class methods work from a suppiled schema. To make a

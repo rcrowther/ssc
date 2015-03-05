@@ -101,7 +101,7 @@ object Runner
     */
   private def addMainhandledHelp(b: HelpBuilder)
   {
-    b.addItem( "-mavenStrict", "sets default configuration to Maven conventions (/src/main/scala etc.)")
+    b.addItem( "-maven", "sets default configuration to Maven conventions (/src/main/scala etc.)")
     b.addItem( "-config", "output the config (the default with file-modifications")
     b.addItem( "-version", "output version information")
     b.addItem( "-help", "output this message")
@@ -165,7 +165,7 @@ object Runner
 
     // Build a config. It's no big consumption.
     val defaultConfig =
-      if(inputArgs.contains("-mavenStrict")) {
+      if(inputArgs.contains("-maven")) {
         Configuration.maven
       }
       else Configuration.default
@@ -390,11 +390,14 @@ object Runner
         noColor = inputArgs.contains("-noColor")
 
         // Get the default config
-        val defaultConfig =
-          if(inputArgs.contains("-mavenStrict")) {
-            Configuration.maven
+        val (defaultConfig, taskArgs) =
+          if(inputArgs.contains("-maven")) {
+            // This arg needs to be stripped, as the main commandline
+            // parser will not recognise it.
+            val argsNoMaven = inputArgs.filter(_ != "-maven")
+            (Configuration.maven, argsNoMaven)
           }
-          else Configuration.default
+          else (Configuration.default, inputArgs)
 
         // Build a configuration tree.
         // (also checks for overriding build.ssc files)
@@ -411,7 +414,7 @@ object Runner
         val clParser = new ParseCommandLine(verbose, noColor)
 
         // NB: The return is tuple(task, targeted configuration)
-        val argsO: Option[(String, ConfigGroup)] = clParser.parse(inputArgs)
+        val argsO: Option[(String, ConfigGroup)] = clParser.parse(taskArgs)
         //println(s"argsO:\n $argsO")
 
 

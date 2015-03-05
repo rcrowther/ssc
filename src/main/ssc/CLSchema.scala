@@ -88,9 +88,10 @@ object CLSchema {
 
       // scalac (compile) options //
       "-optimise" -> "faster bytecode by code analysis",
-      "-incremental" -> ("compile only changed files", "true"),
+      "-noIncremental" -> ("force compile of all files", "false"),
       "-feature" -> ("turn on Scala's feature warnings (needs a new compile to report)"),
       "-deprecation" -> "turn on Scala's deprecation warnings (needs a new compile to report)",
+      "-g" -> ("set level of generated debugging info, one of 'none','source','line','vars','notailcalls' (default: 'vars')", Seq("vars"), ParameterDescription.strCode),
       "-meter"  -> ("show a progressbar, one of 'none', 'progress', 'bounce', 'buzz'. Only visible using the -verbose switch (default: 'progress')", "progress", ParameterDescription.strCode, false, 1)
     )
   }

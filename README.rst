@@ -145,7 +145,7 @@ SCALA_HOME must be pointed at a Scala distribution folder. ``ssc`` will not work
 
 Libraries
 ---------
-One bad start is lost dependencies. ``ssc`` needs to know, or is helped, by knowing the libraries the code uses. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
+``ssc`` needs to know, or is helped, by knowing the libraries the code uses. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
 
     libFiles = /path/to/my/library
 

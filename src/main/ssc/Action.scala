@@ -45,7 +45,7 @@ final class Action(
   val scalaPaths: Map[String, Path]
 )
     extends sake.util.io.Trace
-    with sake.util.noThrow.Shell
+    with sake.helper.noThrow.Shell
     with Runnable
 {
 
@@ -371,6 +371,15 @@ final class Action(
     if (config.asBoolean("deprecation")) {
       b += "-deprecation"
     }
+    if (config.asBoolean("deprecation")) {
+      b += "-deprecation"
+    }
+    if (!config("g").isEmpty) {
+      // NB: Scalac error is ok for -g ("debug")
+      val g = config("g")
+      b += {"-g:" + g}
+    }
+
     b
   }
 
@@ -584,7 +593,7 @@ final class Action(
 
     // Empty the build directory, if not incrementally compiling
     if(
-      !config.asBoolean("incremental") &&
+      config.asBoolean("noIncremental") &&
         dirIsPopulated(buildPath, ".class")
     )
     {
@@ -616,7 +625,7 @@ final class Action(
     val needsCompiling = addSrcPathStrings(
       b,
       processingRoute,
-      config.asBoolean("incremental")
+      !config.asBoolean("noIncremental")
     )
 
 

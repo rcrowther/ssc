@@ -10,7 +10,7 @@ import java.lang.System
 *  
 */
 trait FindExecutable
-    extends sake.util.noThrow.Shell
+    extends sake.helper.noThrow.Shell
 {
   /** Returns the version of the found executable.
     */
