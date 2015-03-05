@@ -7,7 +7,7 @@ The Scala documenter
 ``ssc`` is a Unix/Scala program. It has little use for non-Scala users. It's probably a bad idea to think of converting it for other uses. There are better languages than Scala for this kind of activity.
 
 
-``ssc`` is good for documenting. It can also help delve round in other people's code, fix your own code (especially if broken), and understand how Scala projects are organised. 
+``ssc`` is good for documenting. It can also help delve round in other people's code or fix your own code (especially if broken). 
 
 
 ``ssc`` runs from the commandline. On that,
@@ -35,7 +35,7 @@ jar           invoke 'jar'          targets source folders
 
 
 
-``ssc`` has been a marsh of coding grief (a corrupt-Java self-activating tool with online documentation and no community?). On that,
+``ssc`` has been a marsh of coding grief (a corrupt-Java self-activating tool from online documentation with no community?). On that,
 
 
 The bad and the good
@@ -85,7 +85,7 @@ Needs
 -----
 Java7 and Scala. Both standard, OpenJDK is fine.
 
-Much of ``ssc`` works from shell invocation. It can use several in-system tools. If the host computer has ``graphviz``, ``ssc`` can leverage scaladoc to add inheritance diagrams. ``ssc`` also likes ``grep`` and ``tree``.
+Much of ``ssc`` works from shell invocation. If the host computer has ``graphviz``, ``ssc`` can leverage scaladoc to add inheritance diagrams. ``ssc`` also likes ``grep`` and ``tree``.
 
 
 Building
@@ -113,7 +113,7 @@ Reminder instructions for a half-install
 
 Find or make `.bashrc`, usually in your home folder.
 
-Add or amend the path to the `/bin` (note the lack of spaces. ``bash`` is not fond of spaces) e.g. ::
+Add or append the path to the `/bin` (note the lack of spaces. ``bash`` is not fond of spaces) e.g. ::
 
     PATH="$PATH:/home/myName/.../sake-<version>/bin"
 
@@ -125,7 +125,7 @@ Restart ``bash`` config in every terminal you want to use (new terminals load au
  
     source ~/.bashrc
 
-or restart the whole computer but, in the middle of development, that's a pain.
+or restart the whole computer (in the middle of development, that's a pain).
 
 
 Adjust the script
@@ -138,14 +138,14 @@ JAVA_HOME=""
 
 SCALA_HOME=""
 
-In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. If you have an up-to-date Java, or a Java inside an IDE, point JAVA_HOME at the `/bin` folder.
+In a common setup, Java is installed to the computer, so JAVA_HOME does not need changing. If you have an up-to-date Java, or would like to use a Java inside an IDE, point JAVA_HOME at the `/bin` folder.
 
 SCALA_HOME must be pointed at a Scala distribution folder. ``ssc`` will not work with installed Scala.
 
 
 Libraries
 ---------
-One bad start is lost dependencies for code. ``ssc`` needs to know about libraries the code uses, as ``scaladoc`` does a half-compile. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
+One bad start is lost dependencies. ``ssc`` needs to know, or is helped, by knowing the libraries the code uses. By default, ``ssc`` looks in `lib/` then `Lib/`, so you may be fine. If not, override with a `build.ssc` file (see below) e.g. with this line, ::
 
     libFiles = /path/to/my/library
 
@@ -160,7 +160,7 @@ Make an empty folder. Navigate in with a terminal. Run, ::
 
     ssc
 
-Nothing should happen. Nothing is good (complaints are bad).
+Nothing much should happen. Nothing is good (complaints are bad).
 
 Now put a Scala file in there. Or two. Or a bit of a Scala project. Try, ::
 

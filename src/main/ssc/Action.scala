@@ -987,9 +987,9 @@ final class Action(
         }
 
         val re =
-          if(!config("get").isEmpty) {
+          if(!config("text").isEmpty) {
             //easy, the default.
-            b += config("get")
+            b += config("text")
           }
           else {
             // crazy as it is,
@@ -1170,12 +1170,12 @@ final class Action(
   private def filterRe[A](trav: Traversable[A], getMatchRegion: (A) => String)
       : Traversable[A] =
   {
-    if(!config("get").isEmpty) {
+    if(!config("text").isEmpty) {
 
       val re =
-        if (config.asBoolean("case"))  Pattern.compile(config("get"))
+        if (config.asBoolean("case"))  Pattern.compile(config("text"))
         else {
-          Pattern.compile(config("get"), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+          Pattern.compile(config("text"), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
         }
       val m = re.matcher("")
       //println (s" mchr: $m")
@@ -1299,11 +1299,11 @@ final class Action(
           b += "-d"
         }
 
-        if (!config("get").isEmpty) {
+        if (!config("text").isEmpty) {
           // Use a glob. Spec allows it (though we ought to strip glob-significant chars like wildcards).
           // However, we must allow content-free globbing
           b += "-P"
-          b += "*" + config("get") + "*"
+          b += "*" + config("text") + "*"
         }
 
         if (!config.asBoolean("hidden")) {

@@ -274,11 +274,11 @@ if [[ -z "$JAVACMD" && -x "/usr/bin/java" ]]; then
 	is_JDK="true"
 	is_installed="true"
 
-else
-    echo "This script must have the variable JAVA_HOME pointed at a Java distribution folder. The script tried to look for an installation, but failed."
-    onExit
-fi
+    else
+	echo "This script must have the variable JAVA_HOME pointed at a Java distribution folder. The script tried to look for an installation, but failed."
+	onExit
     fi
+fi
 
 
 # Decide the Scala executable.
