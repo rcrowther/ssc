@@ -17,7 +17,7 @@ import sake.util.parser._
   */
 object CLSchema {
 
-  /** Switch configuration covering all project activity.
+  /** Switch configuration covering project activity.
     *
     * Is left public as we reference it in general help.
     */
@@ -25,9 +25,7 @@ object CLSchema {
     // Platform dependant (yes, they are)
     "-appName" ->  ("name of this application. Used for example, to label .jar files.", Seq("myApp"), ParameterDescription.name),
     "-appVersion" -> ("version of this application", Seq("0.1.SNAPSHOT"), ParameterDescription.version),
-    "-dependancies" -> ("paths to dependant applications", "",ParameterDescription.paths, true, 32),
-    "-javaPath" -> ("path to Java executable", Seq(""), ParameterDescription.path),
-    "-scalaPath" -> ("path to Scala executable", Seq(""), ParameterDescription.path)
+    "-dependancies" -> ("paths to dependant applications", "",ParameterDescription.paths, true, 32)
   )
 
   private val outputFormatSwitch: ParameteredConfig = Map(
@@ -42,14 +40,16 @@ object CLSchema {
     "-buildDir" -> ("path of the build directory", "build", ParameterDescription.path, false, 1)
   )
 
+
+
   ///////////////////
   // Task switches //
   ///////////////////
 
   private val findSwitches: ParameteredConfig = Map(
     "-subpath" -> ("define a subpath of source to build the tree from", Seq(""), ParameterDescription.path),
-    "-get" -> ("partial text match against live text (filename base or a line)", Seq(""), ParameterDescription.text),
-    "-match" -> ("match a regex against live text (filename base or a line). Full match, anchored at text ends", Seq(""), ParameterDescription.text),
+    "-text" -> ("partial text match against live text (filename base or a line)", Seq(""), ParameterDescription.text),
+    "-match" -> ("match a regex against live text (filename base or a line). Exact match, anchored at text ends", Seq(""), ParameterDescription.text),
     "-hidden" -> "include hidden files",
     "-case" -> "text must match case"
   )
@@ -68,6 +68,11 @@ object CLSchema {
     "-javaTestDir" -> ("path to Java test files", Seq("src/test/java"), ParameterDescription.path, false, 1)
   )
 
+/** Switches for compile tasks
+* 
+* Note that this set concatenates/includes all
+* source switches.
+*/
   private val compileSwitches = {
     sourceSwitches ++
     Map[String, ParameteredOption](
@@ -171,9 +176,9 @@ object CLSchema {
     "-scalaTestExe" -> ("path to a scalaTest jar (ssc will try the library, but the path can be entered explicitly here)", Seq(""), ParameterDescription.path),
     "-to" -> ("where output goes. One of 'gui', 'out', 'err' (default: out)", Seq(""), ParameterDescription.strCode),
     "-suite" -> ("specify a suite to run", Seq(""), ParameterDescription.text),
-    "-suiteFrag" -> ("a fragment of path used to find a set of suites", Seq(""), ParameterDescription.text),
-    "-name" -> (" specify a test to run", Seq(""), ParameterDescription.className),
-    "-nameFrag" -> ("a fragment of name used to find a set of tests", Seq(""), ParameterDescription.text, false, 1)
+    "-suiteText" -> ("a fragment of path used to find a set of suites", Seq(""), ParameterDescription.text),
+    "-match" -> (" specify a test to run (full path)", Seq(""), ParameterDescription.className),
+    "-text" -> ("a fragment of name used to find a set of tests", Seq(""), ParameterDescription.text, false, 1)
 
   )
 
@@ -230,7 +235,7 @@ object CLSchema {
     "fsc" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "test" -> Seq(scalaTestSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "run" -> Seq(runSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
-    "vms" -> Seq(sourceSwitches, outputFormatSwitch),
+    "vms" -> Seq(outputFormatSwitch),
     "doc" -> Seq(docSwitches, docDirSwitch, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch),
     "jar" -> Seq(jarSwitches, compileSwitches, buildDirSwitch, appdataSwitches, outputFormatSwitch)
       // TOCONSIDER: Will be enabled sometime, likely

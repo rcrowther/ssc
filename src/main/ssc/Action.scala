@@ -1865,21 +1865,21 @@ final class Action(
           b += reporter
 
           // ...and finally the  target options.
-          if (!config("suite").isEmpty) {
+          if (!config("suiteMatch").isEmpty) {
             b+= "-s"
-            b += config("suite")
+            b += config("suiteMatch")
           }
-          if (!config("suiteFrag").isEmpty) {
+          if (!config("suiteText").isEmpty) {
             b += "-w"
-            b += config("suiteFrag")
+            b += config("suiteText")
           }
-          if (!config("name").isEmpty) {
+          if (!config("match").isEmpty) {
             b += "-t"
-            b += config("name")
+            b += config("match")
           }
-          if (!config("nameFrag").isEmpty) {
+          if (!config("text").isEmpty) {
             b += "-z"
-            b += config("nameFrag")
+            b += config("text")
           }
           /*
            scala -toolcp /home/rob/Code/sake/build/main/scala/ -classpath lib/scalatest_2.11-2.2.4.jar org.scalatest.tools.Runner -o -R "/home/rob/Code/sake/build/test/scala"
@@ -1927,6 +1927,7 @@ final class Action(
       case "introspect" => introspect()
       case "bytecode" => bytecode()
       case "repl" => repl()
+      case "vms" => vms()
 
       case  _ => {
 
@@ -1941,7 +1942,6 @@ final class Action(
             case "test" => scalaTest()
             case "doc" => doc()
             case "run" => runK()
-            case "vms" => vms()
             case "jar" => jar()
 
             case  _ => traceError(s"Unrecognised task? $taskName")

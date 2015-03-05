@@ -15,24 +15,25 @@ The Scala documenter
 
 List of tasks
 -------------
+You can tell I'm not cut out for Java - I'm going to tell you what it does and how,
 
-===========  ====================  =====================
+===========  ====================  =============================
  Task         implemented by        ssc tampering
-===========  ====================  =====================
+===========  ====================  =============================
 find          invoke 'grep'         formatting
 findfile      Java code             formatting
 tree          invoke 'tree'         formatting
 introspect    invoke 'scalap'         -
 bytecode      invoke 'javap'          -
-repl          invoke 'scala'        (no targetting)
+repl          invoke 'scala'        (no targeting)
 run           invoke 'scala'        targets classnames
 doc           invoke 'scaladoc'     targets source folders
 vms           invoke 'jps'          formatting
-test          invoke 'scalatest'      -
+test          invoke 'scalatest'    targets test source folders
 jar           invoke 'jar'          targets source folders
-===========  ====================  =====================
+===========  ====================  =============================
 
-You can tell I'm not cut out for Java - I just told you what it does and how.
+
 
 ``ssc`` has been a marsh of coding grief (a corrupt-Java self-activating tool with online documentation and no community?). On that,
 
@@ -55,7 +56,6 @@ The bad and the good
   - uses the Scala and Java libraries you point it at, not the ones it wants to help you with. 
   - It can use tree. tree! :)
 
-**NEW** The shoddiest fsc implementation known to code!
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.
 
