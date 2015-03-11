@@ -10,8 +10,8 @@ import java.nio.file.Path
   *
   * @param cwd the location the project is working from. This value
   *  is used extensively when ssc acts upon project information.
-  * @param projectConfig the config the project will use. This will
-  *   often be overlaid with values expressed on the commandline.
+  * @param projectConfig the config the project will use. This is a full config covering every task. It will include default and
+  * local build.ssc modifications, but not values expressed on the commandline.
   * @param dependancies the projects this project is dependant upon.
   *  This data is carried in `projectConfig`, but is exposed for
   *  easy access.

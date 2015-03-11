@@ -314,6 +314,7 @@ object Runner
     )
   }
 
+
   def runProject(
     project: Project,
     task: String,
@@ -328,7 +329,7 @@ object Runner
         clConfigured
       )
     }
-    // Make up a new task config, by overlaying one with another.
+    // Make up a task config, by overlaying one with another.
     // Both are, at this point, fully tested.
     val taskConfig = project.projectConfig(task) ++ clConfigured
 
