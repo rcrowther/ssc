@@ -1,11 +1,12 @@
-# ignore all bin directories
+# ignore bin directories
 # matches "bin" in any subfolder
 bin/
 
-# ignore all target directories
+# ignore target directories
 target/
 build/
 Doc/
+doc/
 
 # ignore all files ending with ~
 *~ 

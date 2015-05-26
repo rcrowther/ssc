@@ -3,39 +3,63 @@ I don't like build tools, and have no base to distribute Java .jar files. So bui
 
 You need Java and Scala.
 
-For Java, OpenJDK is fine, and can be installed by package. Or download an Oracle jar file and put it someplace. For Scala, packages are not so reliable. Scala has always moved fast, and packaging doesn't keep up. Sake and SSC use simple Scala code, so should work even with old versions of Scala. On the whole, a download of Scala may cause less problems. Then put it on your path. Urrgh. See below, follow same instructions as installing Sake itself.
+For Java, OpenJDK is fine, and can be installed by package. Or download an Oracle jar file and put it someplace. For Scala, packages are not so reliable. Scala has always moved fast, and packaging doesn't keep up. This project uses simple Scala code, so should work even with old versions of Scala. On the whole, a download of Scala may cause less problems. Then put it on your path. Urrgh. See below, follow the same instructions as installing the project itself.
+
  
-Right, the main event. Download Sake/ssc, and navigate a terminal into the top folder. Then,
+== If you have SSC installed already
 
-mkdir build/main
-mkdir build/main/scala
-scalac -verbose @scalacArgs
+=== Documentation
 
-That will send the terminal wild with enthusiasm, at the end of which, you have a compile. It's in the folder/directory named 'build'.
+In the top folder, run,
 
-Then make executable .jar files from the code,
-
-scala -verbose -toolcp build/main/scala -Dsake.runner.home= sake.PackageSake installable
+ssc doc
 
 
-If all runs ok, a folder called sake-<some.version.name> should appear inside the folder. It has a /bin and a /lib in it. You can half-install it.
+=== To update SSC
+In the top folder, run,
+
+ssc -verbose jar
+
+This will produce a jar.
+
+Goto wherever you have deployed ssc, go into the /lib folder, and replace the .jar there with the one you have just made.
+
+
+
+== If you do not have SSC installed already
+
+=== Documentation
+
+In the top folder, run,
+
+./make_docs
+
+
+=== To install SSC
+Download a package, and navigate a terminal into the top folder. Run,
+
+./make_compile_and_jar
+
+
+If the script runs ok, a folder called /ssc will appear inside the folder. It has a compiled and jar'ed executable, with supplementary folders. The folder can half-installed.
 
 
 === Reminder instructions for a half-install
-Move the entire /bin folder to wherever you keep Java code, and put them on your computer's path.
+Move the compiled project folder to wherever you keep Java code.
 
-Adjust the top of the Sake script to point at your choice of Scala installation (and Sake and Java, if you wish).
+Adjust the top of the project script to point at your choice of Scala installation (and Java, if necessary).
+
+Put the folder on the computer's path.
 
 
-
-== Change Path
-To put a folder in the operating systems $PATH, so the commandline can find it. To see your path,
+== Appending to a system Path
+Put a folder in the operating systems $PATH so the commandline can find it. To see your path,
 
 echo $PATH
 
-Find .bashrc, usually in your home folder. If you have a Debian-based system it depends on the development philosophy one long-ago frosty morning. Try  ~/.bash_profile. Or even just creating .bashrc and see if it works. Or swapping operting sytems for someone that will tell you what they are doing.
+Find .bashrc, usually in your home folder. If you have a Debian-based system the location of .bashrc depends on development philosophy one long-ago frosty morning. Try  ~/.bash_profile. Or even just creating .bashrc and see if it works. Or swapping operating sytems for someone that will tell you what they are doing.
 
-Add or ammend like this (note the lack of spaces. bash is not fond of spaces),
+Add or ammend to .bashrc like this (note the lack of spaces. bash is not fond of spaces),
 
 PATH=/home/someUserName/Websites/someSiteFolder:$PATH
 
@@ -49,32 +73,34 @@ The path declaration needs,
 
 export path
 
-after that, but many more complex config files (e.g. Debian) have that already.
+after that, but preconfigured .bashrc files (e.g. Debian) have that already.
 
  
 (you can export 
 
 PATH=$PATH:/home/someUserName/Websites/someSiteFolder
 
-, but it won't persist)
+from the commandline, but it won't persist)
 
 
 
 == Restart bash
+In every terminal to be used, run,
+
 source ~/.bashrc
 
-or restart the whole computer, but in the middle of development, that's a pain.
+Or restart the whole computer, but in the middle of development, that's a pain.
 
 
 
 === Adjust the script
-The Sake script launcher doesn't try to 'scala' the jar, it runs Java with Scala as a library (more flexible).
+The project script launcher doesn't try to 'scala' the jar, it runs Java with Scala as a library (more flexible).
 
 You need to tell the script where to find Scala. In the script, point this variable,
  
 SCALA_HOME="/path/to/my/chosen/scala/folder"
 
-at the folder containing the Scala executables (it should contain /lib and /bin).
+at the folder containing Scala executables (which should contain /lib and /bin).
 
 Don't be tempted to add formatting, especially spaces! This is BASH! It will scorn you!
 
@@ -82,7 +108,7 @@ You can also point at another Java, in the same way, using,
 
 JAVA_HOME="/path/to/my/chosen/jdk"
 
-...and change the Sake you are using, but most people will not need that.
+...but most people will not need that.
 
 
 === Libraries

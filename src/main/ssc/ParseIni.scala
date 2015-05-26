@@ -17,7 +17,7 @@ class ParseIni(
   val verbose: Boolean,
   val noColor: Boolean
 )
-    extends sake.util.io.Trace
+    extends script.io.Trace
 {
 
   /** Tidy the data

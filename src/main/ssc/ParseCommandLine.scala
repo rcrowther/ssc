@@ -1,14 +1,14 @@
 package ssc
 
-import sake.util.parser.ParameteredOption
+import ssc.util.parser.ParameteredOption
 
 
 class ParseCommandLine(
   val verbose: Boolean,
   val noColor: Boolean
 )
-    extends sake.util.io.Trace
-    with sake.util.parser.Parser
+    extends script.io.Trace
+    with ssc.util.parser.Parser
 {
 
   private def processSwitches(

@@ -1,7 +1,7 @@
 package ssc
 
 
-import sake.util.parser._
+import ssc.util.parser._
 
 
 /** Contains definitions for the commandline activity of ssc.

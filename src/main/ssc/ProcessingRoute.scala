@@ -1,8 +1,7 @@
 package ssc
 
 import java.nio.file.Path
-import sake.helper.file._
-
+import script.io.file._
 
 
 /** Holds route data for compiling.

@@ -1,20 +1,4 @@
-Why did I get here? What is it all for? What's the point of it all? Questions I often ask myself when coding. Of course, Rake comes with a Rooby-Groovy rationale, and isn't that cool. Scala is supposed to be Rooby-Groovy, but is occupied by the violent shades of Java. So here I am.
-
-Anyhow, what is the point, you may ask, of a Scala version of Rake (the Ruby version of Make)? Well... I want it. That's the bottom line. No, I don't want it, but yes I do. See, I want to write Scala code, and somehow I never quite do. Enough!
-
-The reason is that Ruby is a pain to load on computers. And has a habit of coming appart in corner cases.
-
-Actually, I spent nearly a day trying not to write this in Scala. I even had a poke at Dylan, as the best contender by far, but the manuals and EMACS-on-Unix put me right off. I want to get this done. And one thing about Scala, is you get things done. Or not get things done further than you would have not got things done in other languages.
-
-I'm sure it will all fall appart in some Scala-into-Javaish way at some point, but it's got this far.
-
-Unlike the Rake code, I can see this being very useful to me. And, being Scala, and always feeling depressed about computer coding, and code environments, and code culture, that would be a step forward. A tiny step forward. A step. Of course, hindsight does good. Rake was a big hit, and has had widespread influence. Not that I expect this to. Because it reinvents the wheel. It's crap. In Scala. Insult in itself.
-
-Do you spot a trace of Scalatra? I do. Maybe you don't. With no bounce back on their efforts, thanks for the clues in the code.
-
-Further to Rake, this does a few Scala tricks. Like being slow to launch as interpretation, but then it is a compiled language. And a few other oddities.
-
-Enjoy. I don't get a kick out of coding, because it fails me. Hope you can.
+I don't get a kick out of coding, because it fails me. Hope you can.
 
 
 Rob

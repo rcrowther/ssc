@@ -264,21 +264,26 @@ Note that commandline options override a `build.ssc` file. So, ::
 
    config = default + build.ssc (if it exists) + commandline options
 
-Any configuration option added to this file overrides default values e.g. ::
+Any configuration option added to this file overrides default values. State the task, then the value to use e.g. ::
 
     # Build file for SSC
 
-    # Set project data,
-    # and make always verbose 
-    [project]
-    name = "ssc_app"
-    version = "6.0"
+    # Identify .jars
+    [jar]
+    appVersion = 0.7.1
+    appName = SSCApp
+
+    # Make compilation always verbose 
+    [compile]
     verbose = true
 
     # Insist on diagrams for documentation
+    # ...add documentation detail every time
     [doc]
     diagrams = true
-
+    title = FleurDeMaGraft
+    footer = by way of dreaming...
+    rootdoc = src/rootdoc.txt
 
 `build.ssc` file format is a dead boring .ini file. It can stand you typing with a bandaged hand.
 

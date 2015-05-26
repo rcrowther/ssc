@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#
+##############################################################################
+# Copyright 20015 rcrowther
+#
+# This is free software; see the distribution for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+##############################################################################
+
+## Point at a scala installation
+# Empty tries for an installed version.
+#SCALA_HOME=""
+
+## The name of the executable to create
+SCALA_EXECUTABLE="ssc"
+
+
+#!SCALA_HOME.isEmpty 
+if [[ -n "$SCALA_HOME" ]]; then
+SCALAEXE="$SCALA_HOME/bin/scalac" 
+else
+SCALAEXE="scalac"
+fi
+
+if [[ -n "$JAVA_HOME" ]]; then
+JAREXE="$JAVA_HOME/bin/" 
+else
+JAREXE="jar"
+fi
+
+mkdir build
+mkdir build/main
+mkdir build/main/scala
+PWD="$(pwd)"
+echo "compiling..."
+
+
+SRCS="$(find $PWD/src/main/ | grep scala$)"
+#-exec grep \"scala$\" {}
+#echo $SCALAEXE -d build/main/scala -toolcp lib/script_0.2.1.jar $SRCS
+
+#scalac @scalacArgs
+"$($SCALAEXE -verbose -d build/main/scala -toolcp lib/script_0.2.1.jar $SRCS)"
+
+# Make manifest
+echo "Manifest-Version: 1.0
+Specification-Title: $SCALA_EXECUTABLE" > "$PWD/MANIFEST.MF"
+
+# Make .jar
+$JAREXE cfm $SCALA_EXECUTABLE.jar MANIFEST.MF -C build/main/scala .
+
+# Remove the now-copied manifest
+rm -v MANIFEST.MF
+
+# build the distro package
+mkdir ssc
+mkdir ssc/doc
+mkdir ssc/lib
+mkdir ssc/bin
+
+# copy the launch script
+cp src/main/ssc/tools/ssc ssc/bin
+
+# move the jar
+mv -v $SCALA_EXECUTABLE.jar ssc/lib
+
+
+
+# copy the documentation
+cp -v README.rst ssc/doc
+cp -v text/INSTALL ssc/doc
+cp -v text/LICENSE ssc/doc

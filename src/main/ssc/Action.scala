@@ -4,8 +4,10 @@ import java.io.File
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.Path
 
-import sake.helper.file._
-import sake.helper.executable.FindExecutable
+//import sake.helper.file._
+//import sake.helper.executable.FindExecutable
+import script.io.file._
+import script.system.executable._
 
 import java.util.regex.Pattern
 import ssc.action._
@@ -44,8 +46,9 @@ final class Action(
   val javaPaths: Map[String, Path],
   val scalaPaths: Map[String, Path]
 )
-    extends sake.util.io.Trace
-    with sake.helper.noThrow.Shell
+    extends script.io.Trace
+    //with sake.helper.noThrow.Shell
+    with script.system.noThrowing.Shell
     with Runnable
 {
 
@@ -324,7 +327,7 @@ final class Action(
           val e = FindExecutable("dot").find(
             false,
             true,
-            sake.helper.executable.Version.empty
+            script.system.executable.Version.empty
           )
 
           if(e != None) {
@@ -966,7 +969,7 @@ final class Action(
     val e = FindExecutable("grep").find(
       false,
       true,
-      sake.helper.executable.Version.empty
+      script.system.executable.Version.empty
     )
 
 
@@ -1287,7 +1290,7 @@ final class Action(
     val e = FindExecutable("tree").find(
       false,
       true,
-      sake.helper.executable.Version.empty
+      script.system.executable.Version.empty
     )
 
     if(e == None) {

@@ -5,13 +5,13 @@ import java.nio.file.Paths
 import java.nio.file.Path
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import sake.helper.file._
-import sake.util.parser.HelpBuilder
+import script.io.file._
+import ssc.util.parser.HelpBuilder
 
 
 // TODO need startup script to run without Scala
 object Runner
-    extends sake.util.io.Trace
+    extends script.io.Trace
 {
 
   // For starters...
