@@ -62,7 +62,10 @@ mkdir ssc/bin
 # copy the launch script
 cp src/main/ssc/tools/ssc ssc/bin
 
-# move the jar
+# copy the support library jar
+cp -v lib/script* ssc/lib
+
+# move the executing jar
 mv -v $SCALA_EXECUTABLE.jar ssc/lib
 
 
