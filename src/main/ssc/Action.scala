@@ -403,10 +403,8 @@ final class Action(
       : Boolean =
   {
 
-    /** Tests wether a string is contained within another, or visa versa.
-      *
-      * @return true if either string is wholy contained in the other
-      */
+    // Tests wether a string is contained within another, or visa versa.
+    // return true if either string is wholy contained in the other
     def unionContains(
       str1: String,
       str2: String

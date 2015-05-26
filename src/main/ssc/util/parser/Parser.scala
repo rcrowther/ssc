@@ -6,7 +6,7 @@ import script.io.Trace
 
 /** Simple commandline parser.
   *
-  * Must be mixed into a class also mixing [[ssc.util.io.Trace]].
+  * Must be mixed into a class mixing 'Trace'.
   *
   * To verify the commandline, and restructure in a more convenient
   * format, the class methods work from a suppiled schema. To make a
