@@ -47,7 +47,7 @@ final class Action(
   val scalaPaths: Map[String, Path]
 )
     extends script.io.Trace
-    //with sake.helper.noThrow.Shell
+//with sake.helper.noThrow.Shell
     with script.system.noThrowing.Shell
     with Runnable
 {
@@ -228,8 +228,8 @@ final class Action(
     * @param loadLibsAtBoot if true, lib paths are rendered
     * on -bootclasspath switches (the default is on -toolcp switches)
     */
-    // NB: fsc requires libs to be loaded using -bootclasspath, not via the usual
-    // -toolcp option
+  // NB: fsc requires libs to be loaded using -bootclasspath, not via the usual
+  // -toolcp option
   private def buildScalaStandardOptions(
     executable : String,
     destination : Option[Path],
@@ -1691,7 +1691,7 @@ final class Action(
     }
     else {
       val bp = bpO.get
-    settings.classpath.value = bp.toString
+      settings.classpath.value = bp.toString
       traceInfo(s"REPL started, build path ${bp.toString}")
     }
 
@@ -1834,31 +1834,54 @@ final class Action(
         else {
           traceInfo("scalaTest executable found!")
 
+          // NB: This code uses Scalatests 'Runner' method of
+          // invokation
 
           val b = Seq.newBuilder[String]
 
           val scalaCmd = scalaPaths("scala").toString
           b += scalaCmd
+          /*
+           scala -toolcp lib/scalatest_2.11-2.2.4.jar -toolcp lib/script.jar org.scalatest.tools.Runner -R /home/rob/Code/scala/ssc/build/test/scala/ssc -o -t ParseSpec
+           */
 
-          b += "-classpath"
-          b += exec
+          // Add libs
+          // ...ignoring Scalatest
+          dirEntryPaths(libPath, ".jar").foreach{ p =>
+            if (!p.getFileName.toString.startsWith("scalatest")) {
+              b += "-toolcp"
+              b += p.toString
+            }
+          }
+
 
           // Hokay, add the classpaths to compiled code
           // NB: classpath probe down for Scala and Java files.
-          //NB. NB. It's important, because scalatest gets confused, that these are -toolcp.
-          compiledClasspaths.foreach { p =>
-            b += "-toolcp"
-            b += p.toString
-          }
+          //NB. It's important, because scalatest gets confused,
+          // that these are -bootclasspath?   
+           compiledClasspaths.foreach { p =>
+           b += "-bootclasspath"
+           b += p.toString
+           }
+          
+          // An alternative to -R ... is to load everything
+          // (according to scaladoc...)
+          // Particular test
+          //b += "-toolcp"
+          //b += "/home/rob/Code/scala/ssc/build/main"
+
+          // The Scalatest jar
+          // ...think this must immediately preceed the runner
+          // and subsequent args
+          b += "-classpath"
+          b += exec
 
           // Add the runner
           b += "org.scalatest.tools.Runner"
 
           // ...and the -R thing
+          // "The runpath from which tests will be discovered and loaded"
           b += "-R"
-
-
-          // ...and the directory with the tests in
           b += r.buildPath.get.toString
 
           //...and the output reporter
@@ -1880,7 +1903,7 @@ final class Action(
 
           b += reporter
 
-          // ...and finally the  target options.
+          // ...and finally the test-targeting options.
           if (!config("suiteTextE").isEmpty) {
             b+= "-s"
             b += config("suiteTextE")
@@ -1897,16 +1920,13 @@ final class Action(
             b += "-z"
             b += config("text")
           }
-          /*
-           scala -toolcp /home/rob/Code/sake/build/main/scala/ -classpath lib/scalatest_2.11-2.2.4.jar org.scalatest.tools.Runner -o -R "/home/rob/Code/sake/build/test/scala"
-           List(scala, -classpath, lib/scalatest_2.11-2.2.4.jar, org.scalatest.tools.Runner, -R, /home/rob/Code/sake/build)
-           */
 
+          println(s"scalatest line: ${b.result()}")
 
           val (retCode, stdErr, stdOut) = shCatch (b.result())
           trace(stdErr)
           trace(stdOut)
-          //println(s"scalatest line: ${b.result()}")
+
           if (retCode != 0) {
             traceError("errors from ScalaTest?")
           }

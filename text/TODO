@@ -1,4 +1,7 @@
 == TODO
+
+Despite a couple of efforts, Scalatest not working.
+
 'version' is a task, not a switch?
 
 Put a verbose on 'fsc'

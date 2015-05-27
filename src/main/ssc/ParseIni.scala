@@ -40,15 +40,16 @@ class ParseIni(
       val trimmed = line.trim
 
       // Only try if not empty and not a comment
-      // NB, for some reason this didn't short ciruit, and cost me time.
+      // NB: for some reason this didn't short ciruit, and cost me time.
       if (!trimmed.isEmpty && !(trimmed.charAt(0) == '#')) {
         if (trimmed.charAt(0) == '[') {
-          // is a group
+          // is potentially a group
           if (!groupFound) groupFound = true
           else {
             b += (currentGroup -> gb.result())
             gb.clear()
           }
+          //TODO: Should test the end...
           currentGroup = trimmed.slice(1, trimmed.size - 1)
         }
         else {
@@ -63,11 +64,11 @@ class ParseIni(
       }
     }
 
-// As the last group data is added,
-// check a group title was found at all
-if(groupFound) {
-    b += (currentGroup -> gb.result())
-}
+    // As the last group data is added,
+    // check a group title was found at all
+    if(groupFound) {
+      b += (currentGroup -> gb.result())
+    }
     b.result
   }
 
