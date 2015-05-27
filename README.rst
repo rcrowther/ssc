@@ -17,21 +17,21 @@ List of tasks
 -------------
 You can tell I'm not cut out for Java - I'm going to tell you what it does and how,
 
-===========  ====================  =============================
+===========  ====================  =========================================
  Task         implemented by        ssc tampering
-===========  ====================  =============================
+===========  ====================  =========================================
 find          invoke 'grep'         formatting
 findfile      Java code             formatting
 tree          invoke 'tree'         formatting
-introspect    invoke 'scalap'         -
-bytecode      invoke 'javap'          -
-repl          invoke 'scala'        (no targeting)
-run           invoke 'scala'        targets classnames
-doc           invoke 'scaladoc'     targets source folders
+introspect    invoke 'scalap'       auto-compiles class files
+bytecode      invoke 'javap'        auto-compiles class files
+repl          scala library call    uses build folder classes (if available)
+run           invoke 'scala'        auto-compiles class files
+doc           invoke 'scaladoc'     uses source folders
 vms           invoke 'jps'          formatting
-test          invoke 'scalatest'    targets test source folders
-jar           invoke 'jar'          targets source folders
-===========  ====================  =============================
+test          invoke 'scalatest'    uses test source folders
+jar           invoke 'jar'          auto-compiles class files
+===========  ====================  =========================================
 
 
 
@@ -54,7 +54,7 @@ The bad and the good
   - self-documenting. If ``ssc`` can do something, it's in ``ssc -help``
   - installation-specific configuration using a local file
   - uses the Scala and Java libraries you point it at, not the ones it wants to help you with. 
-  - It can use tree. tree! :)
+  - It can use 'tree'. tree! :)
 
 
 Sorry about the Windows situation, but I can't afford a Windows computer. If someone wants to fix this, the code needs a .bat file and output formatting.

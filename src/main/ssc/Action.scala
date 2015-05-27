@@ -1671,30 +1671,28 @@ final class Action(
 
     val bpO = buildPathMainRoute
 
-    if (bpO == None) {
-      traceWarning("no build found when starting Repl")
-    }
-    else {
-      val bp = bpO.get
-      traceInfo(s"REPL started, build path ${bp.toString}")
-    }
 
 
     val args = Array[String]()
     val command = new GenericRunnerCommand(args.toList, (x: String) => errorFn(x))
     val settings = command.settings
-    def sampleCompiler = new Global(settings)
 
+
+
+    if (bpO == None) {
+      traceWarning("no build found when starting Repl")
+    }
+    else {
+      val bp = bpO.get
+    settings.classpath.value = bp.toString
+      traceInfo(s"REPL started, build path ${bp.toString}")
+    }
+
+    def sampleCompiler = new Global(settings)
     if (!command.ok) return errorFn("\n" + command.shortUsageMsg)
     else if (settings.version) return errorFn("Scala code runner %s -- %s".format(versionString, copyrightString))
     else if (command.shouldStopWithInfo)  return errorFn(command getInfoMessage sampleCompiler)
 
-    //settings.loadfiles.isDefault = false
-    //settings.loadfiles.value = Nil
-    //settings.Xnojline = true
-    //settings.Yreplsync.value = true
-    //println(s"settings.loadfiles.isDefault: ${settings.loadfiles.isDefault}")
-    //println(s"settings:  ${settings.bootclasspath}, ${settings.classpath}, ${settings.Yreplsync}, ${settings.Xnojline}")
 
     val i : Boolean = new ILoop process settings
     i
