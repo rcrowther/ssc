@@ -225,11 +225,16 @@ final class Action(
     *  by the action. May be documentation, compiled files, etc.
     * @param addPreCompiledClassPaths if true, the 
     * compiled/build paths are added as "-classpath"s.
+    * @param loadLibsAtBoot if true, lib paths are rendered
+    * on -bootclasspath switches (the default is on -toolcp switches)
     */
+    // NB: fsc requires libs to be loaded using -bootclasspath, not via the usual
+    // -toolcp option
   private def buildScalaStandardOptions(
     executable : String,
     destination : Option[Path],
-    addPreCompiledClassPaths: Boolean
+    addPreCompiledClassPaths: Boolean,
+    loadLibsAtBoot: Boolean
   )
       : scala.collection.mutable.Builder[String, Seq[String]] =
   {
@@ -253,8 +258,10 @@ final class Action(
     }
 
     // Add libs
+    val libSwitch = if(loadLibsAtBoot) "-bootclasspath" else "-toolcp"
+
     dirEntryPaths(libPath, ".jar").foreach{ p =>
-      b += "-toolcp"
+      b += libSwitch
       b += p.toString
     }
 
@@ -606,21 +613,23 @@ final class Action(
       else scalaPaths("scalac").toString
 
     // Build some compile options
+    // NB: fsc requires libs to be loaded at boot, not via the usual
+    // -toolcp option
     val b = buildScalaStandardOptions(
       command,
       Some(buildPath),
-      true
+      true,
+      fscOpts != None
     )
 
-    //b += "-toolcp"
-    //b += "/home/rob/Deployed/jdk1.7.0_71/lib/tools.jar"
 
     if (fscOpts != None) {
       fscOpts.get.addOpts(b)
     }
 
     appendCompileOptions(b)
-    //println("scalac line:" + b.result())
+    //trace("scalac line:" + b.result())
+
 
     // Maybe incremental compile, maybe full
     val needsCompiling = addSrcPathStrings(
@@ -629,7 +638,7 @@ final class Action(
       !config.asBoolean("noIncremental")
     )
 
-
+    //trace("scalacsrc line:" + b.result())
     if(!needsCompiling) {
       traceInfo("No files need to be compiled")
       true
@@ -643,12 +652,7 @@ final class Action(
         "compiling",
         22
       )
-      /*
-       val test = 
-       """java -Xmx256M -Xms32M -Xbootclasspath/a:/home/rob/Deployed/scala-2.11.4/lib/akka-actor_2.11-2.3.4.jar:/home/rob/Deployed/scala-2.11.4/lib/config-1.2.1.jar:/home/rob/Deployed/scala-2.11.4/lib/jline-2.12.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-actors-2.11.0.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-actors-migration_2.11-1.1.0.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-compiler.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-continuations-library_2.11-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-continuations-plugin_2.11.4-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-library.jar:/home/rob/Deployed/scala-2.11.4/lib/scalap-2.11.4.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-parser-combinators_2.11-1.0.2.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-reflect.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-swing_2.11-1.0.1.jar:/home/rob/Deployed/scala-2.11.4/lib/scala-xml_2.11-1.0.2.jar:/home/rob/Deployed/jdk1.7.0_71/lib/tools.jar -classpath "" -Dscala.home=/home/rob/Deployed/scala-2.11.4 -Dscala.usejavacp=true -Denv.emacs= scala.tools.nsc.Main -d /home/rob/Code/sake/build/main/scala/ssc /home/rob/Code/sake/src/main/ssc/action/IntrospectVM.scala
-       """
-       scala.tools.nsc.Main(test)
-       */
+
       val (retCode, stdErr, stdOut) = shCatch (b.result())
 
       pb.stop()
@@ -888,6 +892,7 @@ final class Action(
       val b = buildScalaStandardOptions(
         scaladocCmd,
         Some(docPath),
+        false,
         false
       )
 
@@ -1391,6 +1396,8 @@ final class Action(
       }
     }
 
+    // NB: fsc requires libs to be loaded using -bootclasspath, not via the usual
+    // -toolcp option. I don't know why this is, but it is.
     def fscCompile(r: ProcessingRoute, fscOpts: FscOpts) {
       traceInfo("compiling...")
       doScalaCompile(r, Some(fscOpts))
@@ -1716,7 +1723,8 @@ final class Action(
         val b = buildScalaStandardOptions(
           scalaCmd,
           None,
-          true
+          true,
+          false
         )
 
         b += "-howtorun:object"

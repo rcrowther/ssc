@@ -11,6 +11,8 @@ verbose = true
 verbose = true
 [fsc]
 verbose = true
+appName = ssc
+noVersionTitle = true
 [clear]
 verbose = true
 [run]
@@ -32,5 +34,5 @@ verbose = true
 [jar]
 verbose = true
 appName = ssc
-appVersion = 3.1.6
+appVersion = 3.1.7
 noVersionTitle = true

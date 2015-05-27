@@ -1,6 +1,8 @@
 package ssc.action
 
 
+/** Collects options for FSC actions.
+*/
 class FscOpts(
   val maxIdle: Int
 )
