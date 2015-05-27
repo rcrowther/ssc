@@ -33,4 +33,4 @@ verbose = true
 verbose = true
 appName = ssc
 appVersion = 3.1.6
-
+noVersionTitle = true

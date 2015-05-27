@@ -1,12 +1,13 @@
 == TODO
+'version' is a task
 
-REPL, make targeted with classpath?
+make 'script' jar version netural
 
 libraries not working with FSC?
 
 Put a verbose on 'fsc'
 
-Can't pass args to run because it takes '-help' etc. as SSC args.
+Can't pass args to 'run' because it takes '-help' etc. as SSC args.
 
 Provide a sample 'run' for independant running?
 

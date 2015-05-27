@@ -23,14 +23,14 @@ You can tell I'm not cut out for Java - I'm going to tell you what it does and h
 find          invoke 'grep'         formatting
 findfile      Java code             formatting
 tree          invoke 'tree'         formatting
-introspect    invoke 'scalap'       auto-compiles class files
-bytecode      invoke 'javap'        auto-compiles class files
-repl          scala library call    uses build folder classes (if available)
-run           invoke 'scala'        auto-compiles class files
-doc           invoke 'scaladoc'     uses source folders
+introspect    invoke 'scalap'       auto-compile
+bytecode      invoke 'javap'        auto-compile
+repl          scala library call    target build (if available)
+run           invoke 'scala'        auto-compile
+doc           invoke 'scaladoc'     target source
 vms           invoke 'jps'          formatting
-test          invoke 'scalatest'    uses test source folders
-jar           invoke 'jar'          auto-compiles class files
+test          invoke 'scalatest'    target test source
+jar           invoke 'jar'          auto-compile
 ===========  ====================  =========================================
 
 
