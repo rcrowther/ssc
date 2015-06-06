@@ -579,34 +579,9 @@ final class Action(
   ///////////////////
 
 
-  /** Compiles source files to the buildDir.
-    *
-    * This is the raw action, and should be protected against missing
-    * sources, etc.
-    *
-    * @return true if a compile succeeded, else false.
-    */
-  // introspect/run/bytecode need close classpaths
-  // jar does not
-  // scalatest does not?
-  def doScalaCompile(
-    processingRoute: ProcessingRoute,
-    fscOpts: Option[FscOpts]
-  )
-      : Boolean =
+  private def compileCommand(fscOpts: Option[FscOpts], buildPath: Path)
+      : collection.mutable.Builder[String, Seq[String]] =
   {
-    val buildPath = processingRoute.buildPath.get
-    // Assert the build directory?
-    Dir.create(buildPath)
-
-    // Empty the build directory, if not incrementally compiling
-    if(
-      config.asBoolean("noIncremental") &&
-        dirIsPopulated(buildPath, ".class")
-    )
-    {
-      Dir.clear(buildPath)
-    }
 
     val command =
       if (fscOpts != None) scalaPaths("fsc").toString
@@ -628,46 +603,129 @@ final class Action(
     }
 
     appendCompileOptions(b)
-    //trace("scalac line:" + b.result())
 
+    b
+  }
 
-    // Maybe incremental compile, maybe full
-    val needsCompiling = addSrcPathStrings(
-      b,
-      processingRoute,
-      !config.asBoolean("noIncremental")
-    )
+  /** Compiles source files to the buildDir.
+    *
+    * This is the raw action, and should be protected against missing
+    * sources, etc.
+    *
+    * @return true if a compile succeeded, else false.
+    */
+  // introspect/run/bytecode need close classpaths
+  // jar does not
+  // scalatest does not?
+  def doScalaCompile(
+    processingRoute: ProcessingRoute,
+    fscOpts: Option[FscOpts]
+  )
+      : Boolean =
+  {
+    val buildPath = processingRoute.buildPath.get
 
-    //trace("scalacsrc line:" + b.result())
-    if(!needsCompiling) {
-      traceInfo("No files need to be compiled")
+    if (config.asBoolean("raw")) {
+      val out = compileCommand(fscOpts, buildPath).result.mkString(" ")
+      trace(s"Compile evocation:\n$out")
+      // Return true to trigger dependant code.
       true
     }
     else {
+      // Assert the build directory?
+      Dir.create(buildPath)
 
-      val pb = new ProgressNotifier(
-        config("meter"),
-        traceInfoPrint _,
-        verbose,
-        "compiling",
-        22
+      // Empty the build directory, if not incrementally compiling
+      if(
+        config.asBoolean("noIncremental") &&
+          dirIsPopulated(buildPath, ".class")
+      )
+      {
+        Dir.clear(buildPath)
+      }
+
+      val b = compileCommand(fscOpts, buildPath)
+
+      // Maybe incremental compile, maybe full
+      val needsCompiling = addSrcPathStrings(
+        b,
+        processingRoute,
+        !config.asBoolean("noIncremental")
       )
 
-      val (retCode, stdErr, stdOut) = shCatch (b.result())
 
-      pb.stop()
-      trace(stdErr)
-      trace(stdOut)
-
-      if (retCode != 0) {
-        traceWarning("compilation errors")
-        false
+      if(!needsCompiling) {
+        traceInfo("No files need to be compiled")
+        true
       }
-      else true
+      else {
+
+        val pb = new ProgressNotifier(
+          config("meter"),
+          traceInfoPrint _,
+          verbose,
+          "compiling",
+          22
+        )
+
+        val (retCode, stdErr, stdOut) = shCatch (b.result())
+
+        pb.stop()
+        trace(stdErr)
+        trace(stdOut)
+
+        if (retCode != 0) {
+          traceWarning("compilation errors")
+          false
+        }
+        else true
+      }
     }
   }
 
 
+  private def jarCommand()
+      : Seq[String] =
+  {
+    val b = Seq.newBuilder[String]
+
+    val jarCmd = javaPaths("jar").toString
+
+    b += jarCmd
+
+
+    var switches = "cfm"
+    if (config.asBoolean("verboseTools")) {
+      switches = switches + "v"
+    }
+    if (config.asBoolean("uncompressed")) {
+      switches = switches + "0"
+    }
+    b += switches
+
+    // TODO: Scala version in title?
+    val jarFileName =
+      if (config.asBoolean("noVersionTitle")) {
+        config("appName") + ".jar"
+      }
+      else config("appName") + "_" + config("appVersion") + ".jar"
+
+    b += jarFileName
+
+    b += "MANIFEST.MF"
+
+
+
+    // NB: 'relative path'  probe down to include Scala and Java files.
+    compiledClasspaths.foreach { p =>
+      // Also, the all-important '.'
+      b += "-C"
+      b += p.toString
+      b += "."
+    }
+
+    b.result()
+  }
 
   /** Archives source files to a jar.
     *
@@ -680,88 +738,60 @@ final class Action(
       : Boolean =
   {
 
+    // Test a JDK is found
     if(!assertJDK("jps")) false
     else {
 
-      // Create a manifest file
-      val b = Seq.newBuilder[String]
-
-      b += "Manifest-Version: 1.0"
-      b += "Implementation-Version: " + config("appVersion")
-      b += "Specification-Title: " + config("appName")
-      b += "Specification-Version: " + config("appVersion")
-
-      if (!config("classpaths").isEmpty) {
-        b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
+      if (config.asBoolean("raw")) {
+        trace(s"Jar invokation:\n${jarCommand().mkString(" ")}")
+        // Return true in case of dependant code.
+        true
       }
-
-      if (!config("mainClass").isEmpty) {
-        b += "Main-Class: " + config("mainClass")
-      }
+      else {
+        val b = Seq.newBuilder[String]
 
 
-      Entry.write(
-        cwd.resolve("MANIFEST.MF"),
-        b.result()
-      )
+        // Create a manifest file
 
+        b += "Manifest-Version: 1.0"
+        b += "Implementation-Version: " + config("appVersion")
+        b += "Specification-Title: " + config("appName")
+        b += "Specification-Version: " + config("appVersion")
 
-      // TODO: permissions?
-
-
-      // Now make a jar file
-      // NB: the 'jar' tool silenty replaces existing
-      // jars, which is what we would like.
-      b.clear
-
-      val jarCmd = javaPaths("jar").toString
-
-      b += jarCmd
-
-
-      var switches = "cfm"
-      if (config.asBoolean("verboseTools")) {
-        switches = switches + "v"
-      }
-      if (config.asBoolean("uncompressed")) {
-        switches = switches + "0"
-      }
-      b += switches
-
-      // TODO: Scala version in title?
-      val jarFileName =
-        if (config.asBoolean("noVersionTitle")) {
-          config("appName") + ".jar"
+        if (!config("classpaths").isEmpty) {
+          b += "Class-Path: " + config.asSeq("classpaths").mkString(" ")
         }
-        else config("appName") + "_" + config("appVersion") + ".jar"
 
-      b += jarFileName
-
-      b += "MANIFEST.MF"
-
+        if (!config("mainClass").isEmpty) {
+          b += "Main-Class: " + config("mainClass")
+        }
 
 
-      // NB: 'relative path'  probe down to include Scala and Java files.
-      compiledClasspaths.foreach { p =>
-        // Also, the all-important '.'
-        b += "-C"
-        b += p.toString
-        b += "."
+        Entry.write(
+          cwd.resolve("MANIFEST.MF"),
+          b.result()
+        )
+
+
+        // TODO: permissions?
+
+
+        // Now make a jar file
+        // NB: the 'jar' tool silently replaces existing
+        // jars, which is what we would like.
+
+        traceInfo("building jar...")
+        val (retCode, stdErr, stdOut) = shCatch (jarCommand())
+
+        // Cleanup
+        Entry.delete(cwd.resolve("MANIFEST.MF"))
+
+        if (retCode != 0) {
+          traceWarning("jar creation errors")
+          false
+        }
+        else true
       }
-
-      //println(s"jar line ${b.result()}")
-
-      traceInfo("building jar...")
-      val (retCode, stdErr, stdOut) = shCatch (b.result())
-
-      // Cleanup
-      Entry.delete(cwd.resolve("MANIFEST.MF"))
-
-      if (retCode != 0) {
-        traceWarning("jar creation errors")
-        false
-      }
-      else true
     }
   }
 
@@ -1700,9 +1730,14 @@ final class Action(
     else if (settings.version) return errorFn("Scala code runner %s -- %s".format(versionString, copyrightString))
     else if (command.shouldStopWithInfo)  return errorFn(command getInfoMessage sampleCompiler)
 
-
-    val i : Boolean = new ILoop process settings
-    i
+    if (config.asBoolean("raw")) {
+      trace(s"REPL ILoop call with settings:\n${settings}")
+      true
+    }
+    else {
+      val i : Boolean = new ILoop process settings
+      i
+    }
   }
 
 
@@ -1730,16 +1765,22 @@ final class Action(
         b += "-howtorun:object"
         b += "-nc"
         b += c
-        //println(s"run : ${b.result()}")
-        //val r = java.lang.Runtime.getRuntime()
-        //r.exec(b.result.toArray)
-        //r.exec("ls -l &")
-        val (retCode, stdErr, stdOut) = shCatch (b.result())
-        trace(stdErr)
-        trace(stdOut)
 
-        if (retCode != 0) {
-          traceWarning("run errors")
+        if (config.asBoolean("raw")) {
+          trace(s"Run invokation:\n${b.result}")
+        }
+        else {
+          //println(s"run : ${b.result()}")
+          //val r = java.lang.Runtime.getRuntime()
+          //r.exec(b.result.toArray)
+          //r.exec("ls -l &")
+          val (retCode, stdErr, stdOut) = shCatch (b.result())
+          trace(stdErr)
+          trace(stdOut)
+
+          if (retCode != 0) {
+            traceWarning("run errors")
+          }
         }
       }
     }
@@ -1858,11 +1899,11 @@ final class Action(
           // Hokay, add the classpaths to compiled code
           // NB: classpath probe down for Scala and Java files.
           //NB. It's important, because scalatest gets confused,
-          // that these are -bootclasspath?   
-           compiledClasspaths.foreach { p =>
-           b += "-bootclasspath"
-           b += p.toString
-           }
+          // that these are -bootclasspath?
+          compiledClasspaths.foreach { p =>
+            b += "-bootclasspath"
+            b += p.toString
+          }
           
           // An alternative to -R ... is to load everything
           // (according to scaladoc...)

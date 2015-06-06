@@ -12,6 +12,7 @@ import scala.util.matching.Regex
   *
   * @param data lines from a file with an `=` char as separater.
   */
+// TODO: Ought to return Either, not inherit Trace
 class ParseIni(
   data: Traversable[String],
   val verbose: Boolean,

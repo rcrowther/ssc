@@ -34,5 +34,5 @@ verbose = true
 [jar]
 verbose = true
 appName = ssc
-appVersion = 3.1.7
+appVersion = 3.2.0
 noVersionTitle = true

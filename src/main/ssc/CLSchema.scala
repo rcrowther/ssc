@@ -31,7 +31,8 @@ object CLSchema {
   private val outputFormatSwitch: ParameteredConfig = Map(
     "-verbose" -> "Output messages about what the application is doing",
     "-verboseTools" -> "Output messages from tools such as 'scalac' or 'jar'. Can be very noisy.",
-    "-noColor" -> "Output without color codes"
+    "-noColor" -> "Output without color codes",
+    "-raw" -> "Do not execte task, print the data used for execution (e.g. the commandline)"
   )
 
 
