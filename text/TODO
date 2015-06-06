@@ -10,12 +10,11 @@ Can't pass args to 'run' because it takes '-help' etc. as SSC args.
 
 Provide a sample 'run' for independant running?
 
-Provide usable commandlines for any task?
-
 Make the jar/version spacing a more conventional '-', not '_'?
 
 Short switches would be nice, especially -v = -verbose
 
+Raw not enabled on all tasks
 
 ----
 
@@ -97,6 +96,5 @@ when running, hunt for packages?
 
 protect against pre/post slashes in user-configured paths?
 
-sake should have a nice message if there is no temp dir?
 
 

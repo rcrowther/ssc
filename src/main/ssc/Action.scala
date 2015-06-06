@@ -68,6 +68,10 @@ final class Action(
     if (config.contains("buildDir")) Some(cwd.resolve(config("buildDir")))
     else None
 
+  /** Returns a path in the build directory to a 'main' folder.
+    *
+    * Does not confirm the directory exists, only that this is the path configuration defines. 
+    */
   private def buildPathMain : Option[Path] =
     if (buildPathBase != None) Some(buildPathBase.get.resolve("main/"))
     else None
@@ -114,11 +118,18 @@ final class Action(
     * Used for tasks which do not need recompilation, as the tool may
     * stand alone, e.g. repl.
     */
-  private def buildPathMainRoute()
+  private def buildPathMainScalaRoute()
       : Option[Path] =
   {
     val bpO = buildPathMain
-    if (bpO != None && Dir.exists(bpO.get)) bpO
+    //if (bpO != None && Dir.exists(bpO.get)) bpO
+    //else None
+    
+    if (bpO != None) {
+      val p = bpO.get.resolve("scala")
+      if( Dir.exists(p)) Some(p)
+      else None
+    }
     else None
   }
 
@@ -1701,12 +1712,13 @@ final class Action(
 
 
     //TODO: This is inheriting the parent load context anyhow.
-    // So the only question is, can we get it loaded?
-    // Not a priority.
+    // The only question is, can we get it loaded?
+    // Currently pointing at *scala* specific class files (/main/scala/),
+    // as /main was complaining.
     // See sbt/compile/interface/src/main/scala/xsbt
     // ConsoleInterface
 
-    val bpO = buildPathMainRoute
+    val bpO = buildPathMainScalaRoute
 
 
 
